@@ -1,0 +1,1 @@
+${CARGO_TARGET_DIR:-../target}/debug/sns-quill --canister-ids-file ./canister_ids.json --pem-file - transfer 345f723e9e619934daac6ae0f4be13a7b0ba57d6a608e511a00fd0ded5866752 --amount 123.0456 | gzip -9c | zcat | ${CARGO_TARGET_DIR:-../target}/debug/sns-quill send --dry-run -

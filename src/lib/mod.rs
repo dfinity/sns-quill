@@ -37,7 +37,7 @@ pub mod signing;
 pub type AnyhowResult<T = ()> = anyhow::Result<T>;
 
 #[derive(
-Serialize, Deserialize, CandidType, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord,
+    Serialize, Deserialize, CandidType, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord,
 )]
 pub enum TargetCanister {
     Governance,

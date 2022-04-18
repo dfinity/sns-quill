@@ -5,11 +5,11 @@ use anyhow::Context;
 use bip39::Mnemonic;
 use clap::{crate_version, Parser};
 use ic_base_types::CanisterId;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
 use std::str::FromStr;
-use serde::{Deserialize, Serialize};
 
 mod commands;
 mod lib;
@@ -203,13 +203,14 @@ fn test_read_canister_ids_from_file() {
         root_canister_id: CanisterId::from_str("r7inp-6aaaa-aaaaa-aaabq-cai").unwrap(),
     };
 
-    let json_str =  serde_json::to_string(&expected_canister_ids).unwrap();
+    let json_str = serde_json::to_string(&expected_canister_ids).unwrap();
 
     write!(canister_ids_file, "{}", json_str).expect("Cannot write to tmp file");
 
-    let actual_canister_ids = read_sns_canister_ids(Some(canister_ids_file.path().to_str().unwrap().to_string()))
-        .expect("Unable to read canister_ids_file")
-        .expect("None returned instead of Some");
+    let actual_canister_ids =
+        read_sns_canister_ids(Some(canister_ids_file.path().to_str().unwrap().to_string()))
+            .expect("Unable to read canister_ids_file")
+            .expect("None returned instead of Some");
 
     assert_eq!(actual_canister_ids, expected_canister_ids);
 }

@@ -54,7 +54,7 @@ pub async fn submit(req: &RequestStatus) -> AnyhowResult<Vec<u8>> {
             std::thread::sleep(std::time::Duration::from_millis(500));
         }
     }
-        .await?;
+    .await?;
     Ok(blob)
 }
 
