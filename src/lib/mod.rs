@@ -44,7 +44,8 @@ pub enum TargetCanister {
     Ledger,
 }
 
-// Returns the candid for the target canister, if there is one.
+/// Returns the candid interface definition (i.e. the contents of a .did file)
+/// for the target canister, if there is one.
 pub fn get_local_candid(target_canister: TargetCanister) -> AnyhowResult<String> {
     if target_canister == TargetCanister::Governance {
         String::from_utf8(include_bytes!("../../candid/governance.did").to_vec())
