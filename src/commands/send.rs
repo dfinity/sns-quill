@@ -39,7 +39,7 @@ pub async fn exec(opts: SendOpts) -> AnyhowResult {
         }
     } else if let Ok(vals) = serde_json::from_str::<Vec<IngressWithRequestId>>(&json) {
         for tx in vals {
-            submit_ingress_and_check_status(&tx, &opts).await?;
+            send_ingress_and_check_status(&tx, &opts).await?;
         }
     } else {
         return Err(anyhow!("Invalid JSON content"));
@@ -47,7 +47,7 @@ pub async fn exec(opts: SendOpts) -> AnyhowResult {
     Ok(())
 }
 
-pub async fn submit_unsigned_ingress(
+pub async fn send_unsigned_ingress(
     canister_id: Principal,
     method_name: &str,
     args: Vec<u8>,
@@ -68,7 +68,7 @@ pub async fn submit_unsigned_ingress(
 }
 
 /// Submits a ingress message to the Internet Computer and retrieves a reply.
-async fn submit_ingress_and_check_status(
+async fn send_ingress_and_check_status(
     message: &IngressWithRequestId,
     opts: &SendOpts,
 ) -> AnyhowResult {

@@ -1,4 +1,4 @@
-use crate::commands::send::submit_unsigned_ingress;
+use crate::commands::send::send_unsigned_ingress;
 use crate::lib::TargetCanister;
 use crate::{AnyhowResult, CanisterIds};
 use anyhow::Error;
@@ -32,7 +32,7 @@ pub async fn exec(canister_ids: &CanisterIds, opts: AccountBalanceOpts) -> Anyho
         account: account_identifier.to_vec()
     })?;
 
-    submit_unsigned_ingress(
+    send_unsigned_ingress(
         ledger_canister_id,
         "account_balance",
         args,
