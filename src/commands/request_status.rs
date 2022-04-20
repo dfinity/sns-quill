@@ -25,8 +25,10 @@ pub async fn submit(req: &RequestStatus) -> AnyhowResult<Vec<u8>> {
     });
     let Replied::CallReplied(blob) = async {
         loop {
+            // Don't disable subnet delegations: https://smartcontracts.org/docs/interface-spec/index.html#certification-delegation
+            let disable_range_check = false;
             match agent
-                .request_status_raw(&request_id, canister_id, false)
+                .request_status_raw(&request_id, canister_id, disable_range_check)
                 .await?
             {
                 RequestStatusResponse::Replied { reply } => return Ok(reply),

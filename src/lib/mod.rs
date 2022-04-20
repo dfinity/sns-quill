@@ -59,7 +59,7 @@ pub fn get_local_candid(target_canister: TargetCanister) -> AnyhowResult<String>
 
 /// Returns pretty-printed encoding of a candid value.
 pub fn get_idl_string(
-    blob: &[u8],
+    serialized_candid: &[u8],
     target_canister: TargetCanister,
     method_name: &str,
     part: &str,
@@ -67,9 +67,9 @@ pub fn get_idl_string(
     let spec = get_local_candid(target_canister)?;
     let method_type = get_candid_type(spec, method_name);
     let result = match method_type {
-        None => candid::IDLArgs::from_bytes(blob),
+        None => candid::IDLArgs::from_bytes(serialized_candid),
         Some((env, func)) => candid::IDLArgs::from_bytes_with_types(
-            blob,
+            serialized_candid,
             &env,
             if part == "args" {
                 &func.args
@@ -162,8 +162,7 @@ pub fn parse_query_response(response: Vec<u8>) -> AnyhowResult<Vec<u8>> {
         .context("Invalid cbor data in the content of the message.")?;
     if let Value::Map(m) = cbor {
         // Try to decode a rejected response.
-        if let (_, Some(Value::Integer(reject_code)), Some(Value::Text(reject_message))) = (
-            m.get(&Value::Text("status".to_string())),
+        if let (Some(Value::Integer(reject_code)), Some(Value::Text(reject_message))) = (
             m.get(&Value::Text("reject_code".to_string())),
             m.get(&Value::Text("reject_message".to_string())),
         ) {
@@ -175,10 +174,7 @@ pub fn parse_query_response(response: Vec<u8>) -> AnyhowResult<Vec<u8>> {
         }
 
         // Try to decode a successful response.
-        if let (_, Some(Value::Map(m))) = (
-            m.get(&Value::Text("status".to_string())),
-            m.get(&Value::Text("reply".to_string())),
-        ) {
+        if let Some(Value::Map(m)) = m.get(&Value::Text("reply".to_string())) {
             if let Some(Value::Bytes(reply)) = m.get(&Value::Text("arg".to_string())) {
                 return Ok(reply.clone());
             }

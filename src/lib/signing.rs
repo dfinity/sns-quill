@@ -1,10 +1,10 @@
 use crate::lib::AnyhowResult;
-use crate::lib::{get_candid_type, get_local_candid};
-use crate::lib::{get_idl_string, TargetCanister};
+use crate::lib::{get_candid_type, get_idl_string, get_local_candid, TargetCanister};
 use anyhow::{anyhow, Context};
-use ic_agent::agent::QueryBuilder;
-use ic_agent::agent::UpdateBuilder;
-use ic_agent::RequestId;
+use ic_agent::{
+    agent::{QueryBuilder, UpdateBuilder},
+    RequestId,
+};
 use ic_types::principal::Principal;
 use serde::{Deserialize, Serialize};
 use serde_cbor::Value;
