@@ -104,6 +104,7 @@ fn parse_tokens(amount: &str) -> AnyhowResult<Tokens> {
         [tokens] => new_tokens(parse(tokens)?, 0),
         [tokens, e8s] => {
             let mut e8s = e8s.to_string();
+            // Pad e8s with zeros on the right so that its length is 8.
             while e8s.len() < 8 {
                 e8s.push('0');
             }
