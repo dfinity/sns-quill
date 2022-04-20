@@ -4,7 +4,7 @@ use crate::lib::{
     signing::{Ingress, IngressWithRequestId},
     AnyhowResult, TargetCanister,
 };
-use anyhow::{anyhow, Context, Error};
+use anyhow::{anyhow, Context};
 use candid::Decode;
 use clap::Parser;
 use ic_agent::agent::ReplicaV2Transport;
@@ -17,7 +17,7 @@ use std::str::FromStr;
 /// Sends a signed message or a set of messages.
 #[derive(Parser)]
 pub struct SendOpts {
-    /// Path to the signed message
+    /// Path to the signed message. Use "-" for STDIN.
     file_name: String,
 
     /// Will display the signed message, but not send it.
@@ -59,7 +59,7 @@ pub async fn submit_unsigned_ingress(
     send(
         &ingress,
         &SendOpts {
-            file_name: Default::default(),
+            file_name: Default::default(), // Not used.
             yes: false,
             dry_run,
         },
@@ -67,6 +67,7 @@ pub async fn submit_unsigned_ingress(
     .await
 }
 
+/// Submits a ingress message to the Internet Computer and retrieves a reply.
 async fn submit_ingress_and_check_status(
     message: &IngressWithRequestId,
     opts: &SendOpts,
@@ -81,6 +82,7 @@ async fn submit_ingress_and_check_status(
     Ok(())
 }
 
+/// Sends a message to the Internet Computer.
 async fn send(message: &Ingress, opts: &SendOpts) -> AnyhowResult {
     let (sender, canister_id, method_name, args) = message.parse()?;
 
@@ -135,22 +137,20 @@ enum SupportedResponse {
 }
 
 impl FromStr for SupportedResponse {
-    type Err = ();
+    type Err = anyhow::Error;
 
     fn from_str(input: &str) -> Result<SupportedResponse, Self::Err> {
         match input {
             "account_balance" => Ok(SupportedResponse::AccountBalanceResponse),
             "transfer" => Ok(SupportedResponse::TransferResponse),
             "manage_neuron" => Ok(SupportedResponse::ManageNeuronResponse),
-            _ => Err(()),
+            unsupported_response => Err(anyhow!("{} is not a supported response", unsupported_response)),
         }
     }
 }
 
 fn print_response(blob: Vec<u8>, method_name: &String) -> AnyhowResult {
-    let response_type = SupportedResponse::from_str(method_name.as_str())
-        .map_err(|_| format!("{} is not a supported return type", method_name))
-        .map_err(Error::msg)?;
+    let response_type = SupportedResponse::from_str(method_name.as_str())?;
 
     match response_type {
         SupportedResponse::AccountBalanceResponse => {
