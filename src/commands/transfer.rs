@@ -30,7 +30,7 @@ pub struct TransferOpts {
 }
 
 pub fn exec(
-    pem: &str,
+    private_key_pem: &str,
     sns_canister_ids: &SnsCanisterIds,
     opts: TransferOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
@@ -57,7 +57,7 @@ pub fn exec(
     })?;
 
     let msg = sign_ingress_with_request_status_query(
-        pem,
+        private_key_pem,
         "transfer",
         args,
         TargetCanister::Ledger(ledger_canister_id),
