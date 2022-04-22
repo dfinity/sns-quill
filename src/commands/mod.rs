@@ -7,12 +7,16 @@ use std::io::{self, Write};
 use tokio::runtime::Runtime;
 
 mod account_balance;
+mod configure_dissolve_delay;
 mod generate;
+mod make_proposal;
+mod neuron_stake;
 mod public;
 mod qrcode;
 mod request_status;
 mod send;
 mod transfer;
+mod register_vote;
 
 use crate::SnsCanisterIds;
 
@@ -24,6 +28,25 @@ pub enum Command {
     AccountBalance(account_balance::AccountBalanceOpts),
     /// Signs a ledger transfer message to the provided 'to' account.
     Transfer(transfer::TransferOpts),
+    /// Signs messages needed to stake governance tokens for a neuron. First, neuron-stake will sign
+    /// a ledger transfer to a subaccount of the Governance canister calculated from the
+    /// provided private key and memo. Second, neuron-stake will sign a ManageNeuron message for
+    /// Governance to claim the neuron for the principal derived from the provided private key.
+    NeuronStake(neuron_stake::NeuronStakeOpts),
+    /// Signs a ManageNeuron message to configure the dissolve delay of a neuron. With this command
+    /// neuron holders can start dissolving, stop dissolving, or increase dissolve delay. The
+    /// dissolve delay of a neuron determines its voting power, its ability to vote, its ability
+    /// to make proposals, and other actions it can take (such as disbursing).
+    ConfigureDissolveDelay(configure_dissolve_delay::ConfigureDissolveDelayOpts),
+    /// Signs a ManageNeuron message to submit a proposal. With this command, neuron holders
+    /// can submit proposals (such as a Motion Proposal) to be voted on by other neuron
+    /// holders.
+    MakeProposal(make_proposal::MakeProposalOpts),
+    /// Signs a ManageNeuron message to register a vote for a proposal. Registering a vote will
+    /// update the ballot of the given proposal and could trigger followees to vote. When
+    /// enough votes are cast or enough time passes, the proposal will either be rejected or
+    /// adopted and executed.
+    RegisterVote(register_vote::RegisterVoteOpts),
     /// Generate a mnemonic seed phrase and generate or recover PEM.
     Generate(generate::GenerateOpts),
     /// Print QR Scanner dapp QR code: scan to start dapp to submit QR results.
@@ -35,22 +58,43 @@ pub enum Command {
 }
 
 pub fn exec(
-    pem: &Option<String>,
-    canister_ids: &Option<SnsCanisterIds>,
+    private_key_pem: &Option<String>,
+    sns_canister_ids: &Option<SnsCanisterIds>,
     qr: bool,
     cmd: Command,
 ) -> AnyhowResult {
     let runtime = Runtime::new().expect("Unable to create a runtime");
     match cmd {
-        Command::PublicIds(opts) => public::exec(pem, opts),
+        Command::PublicIds(opts) => public::exec(private_key_pem, opts),
         Command::AccountBalance(opts) => {
-            let canister_ids = require_canister_ids(canister_ids)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
             runtime.block_on(async { account_balance::exec(&canister_ids, opts).await })
         }
         Command::Transfer(opts) => {
-            let pem = require_pem(pem)?;
-            let canister_ids = require_canister_ids(canister_ids)?;
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
             transfer::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
+        Command::NeuronStake(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            neuron_stake::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
+        Command::ConfigureDissolveDelay(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            configure_dissolve_delay::exec(&pem, &canister_ids, opts)
+                .and_then(|out| print_vec(qr, &out))
+        }
+        Command::MakeProposal(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            make_proposal::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
+        Command::RegisterVote(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            register_vote::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
         Command::Generate(opts) => generate::exec(opts),
         // QR code for URL: https://p5deo-6aaaa-aaaab-aaaxq-cai.raw.ic0.app/
