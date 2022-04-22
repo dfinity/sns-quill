@@ -30,7 +30,15 @@ pub struct CliOpts {
     #[clap(long)]
     qr: bool,
 
-    /// Path to the SNS cluster's canister ids
+    /// Path to the JSON file containing the SNS cluster's canister ids. This is a JSON
+    /// file containing a JSON map of canister names to canister IDs.
+    ///
+    /// For example,
+    /// {
+    ///   "governance_canister_id": "rrkah-fqaaa-aaaaa-aaaaq-cai",
+    ///   "ledger_canister_id": "ryjl3-tyaaa-aaaaa-aaaba-cai",
+    ///   "root_canister_id": "r7inp-6aaaa-aaaaa-aaabq-cai"
+    /// }
     #[clap(long)]
     canister_ids_file: Option<String>,
 
@@ -39,7 +47,7 @@ pub struct CliOpts {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct CanisterIds {
+pub struct SnsCanisterIds {
     pub governance_canister_id: CanisterId,
     pub ledger_canister_id: CanisterId,
     pub root_canister_id: CanisterId,
@@ -92,7 +100,7 @@ fn read_pem(pem_file: Option<String>, seed_file: Option<String>) -> AnyhowResult
 /// If no file_path is provided (i.e. not provided as input to the command), do nothing and return
 /// Ok(None). If the file_path is provided, but the file is malformed, Err is returned. Else, return
 /// the parsed struct.
-fn read_sns_canister_ids(file_path: Option<String>) -> AnyhowResult<Option<CanisterIds>> {
+fn read_sns_canister_ids(file_path: Option<String>) -> AnyhowResult<Option<SnsCanisterIds>> {
     let file_path = match file_path {
         None => return Ok(None),
         Some(path) => path,
@@ -107,7 +115,7 @@ fn read_sns_canister_ids(file_path: Option<String>) -> AnyhowResult<Option<Canis
     let ledger_canister_id = parse_canister_id("ledger_canister_id", &ids)?;
     let root_canister_id = parse_canister_id("root_canister_id", &ids)?;
 
-    Ok(Some(CanisterIds {
+    Ok(Some(SnsCanisterIds {
         governance_canister_id,
         ledger_canister_id,
         root_canister_id,
@@ -209,7 +217,7 @@ fn test_read_canister_ids_from_file() {
 
     let mut canister_ids_file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
 
-    let expected_canister_ids = CanisterIds {
+    let expected_canister_ids = SnsCanisterIds {
         governance_canister_id: CanisterId::from_str("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap(),
         ledger_canister_id: CanisterId::from_str("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap(),
         root_canister_id: CanisterId::from_str("r7inp-6aaaa-aaaaa-aaabq-cai").unwrap(),

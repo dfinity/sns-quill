@@ -1,16 +1,17 @@
 use crate::commands::request_status;
 use crate::lib::{
     get_ic_url, parse_query_response, read_from_file,
-    signing::{Ingress, IngressWithRequestId},
+    signing::{CallType, Ingress, IngressWithRequestId},
     AnyhowResult, TargetCanister,
 };
 use anyhow::{anyhow, Context};
 use candid::Decode;
 use clap::Parser;
-use ic_agent::agent::ReplicaV2Transport;
-use ic_agent::{agent::http_transport::ReqwestHttpReplicaV2Transport, RequestId};
+use ic_agent::{
+    agent::{http_transport::ReqwestHttpReplicaV2Transport, ReplicaV2Transport},
+    RequestId,
+};
 use ic_sns_governance::pb::v1::ManageNeuronResponse;
-use ic_types::principal::Principal;
 use ledger_canister::{BlockHeight, Tokens, TransferError};
 use std::str::FromStr;
 
@@ -48,13 +49,12 @@ pub async fn exec(opts: SendOpts) -> AnyhowResult {
 }
 
 pub async fn send_unsigned_ingress(
-    canister_id: Principal,
     method_name: &str,
     args: Vec<u8>,
     dry_run: bool,
     target_canister: TargetCanister,
 ) -> AnyhowResult {
-    let msg = crate::lib::signing::sign("", canister_id, method_name, args, target_canister)?;
+    let msg = crate::lib::signing::sign("", method_name, args, target_canister)?;
     let ingress = msg.message;
     send(
         &ingress,
@@ -97,7 +97,7 @@ async fn send(message: &Ingress, opts: &SendOpts) -> AnyhowResult {
         return Ok(());
     }
 
-    if message.call_type == "update" && !opts.yes {
+    if message.call_type == CallType::Update && !opts.yes {
         println!("\nDo you want to send this message? [y/N]");
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
@@ -109,23 +109,22 @@ async fn send(message: &Ingress, opts: &SendOpts) -> AnyhowResult {
     let transport = ReqwestHttpReplicaV2Transport::create(get_ic_url())?;
     let content = hex::decode(&message.content)?;
 
-    match message.call_type.as_str() {
-        "query" => {
+    match message.call_type {
+        CallType::Query => {
             let response = parse_query_response(transport.query(canister_id, content).await?)?;
             print_response(response, &method_name)?;
         }
-        "update" => {
+        CallType::Update => {
             let request_id = RequestId::from_str(
                 &message
                     .clone()
                     .request_id
                     .context("Cannot get request_id from the update message")?,
             )?;
+            let formatted_request_id = format!("0x{}", String::from(request_id));
+            println!("Request ID: {}", formatted_request_id);
             transport.call(canister_id, content, request_id).await?;
-            let request_id = format!("0x{}", String::from(request_id));
-            println!("Request ID: {}", request_id);
         }
-        _ => unreachable!(),
     }
     Ok(())
 }
@@ -144,7 +143,10 @@ impl FromStr for SupportedResponse {
             "account_balance" => Ok(SupportedResponse::AccountBalanceResponse),
             "transfer" => Ok(SupportedResponse::TransferResponse),
             "manage_neuron" => Ok(SupportedResponse::ManageNeuronResponse),
-            unsupported_response => Err(anyhow!("{} is not a supported response", unsupported_response)),
+            unsupported_response => Err(anyhow!(
+                "{} is not a supported response",
+                unsupported_response
+            )),
         }
     }
 }

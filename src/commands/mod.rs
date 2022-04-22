@@ -14,7 +14,7 @@ mod request_status;
 mod send;
 mod transfer;
 
-use crate::CanisterIds;
+use crate::SnsCanisterIds;
 
 #[derive(Parser)]
 pub enum Command {
@@ -36,7 +36,7 @@ pub enum Command {
 
 pub fn exec(
     pem: &Option<String>,
-    canister_ids: &Option<CanisterIds>,
+    canister_ids: &Option<SnsCanisterIds>,
     qr: bool,
     cmd: Command,
 ) -> AnyhowResult {

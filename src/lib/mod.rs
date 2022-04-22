@@ -1,5 +1,5 @@
 //! All the common functionality.
-use crate::CanisterIds;
+use crate::SnsCanisterIds;
 use anyhow::{anyhow, Context};
 use bip39::Mnemonic;
 use candid::{
@@ -40,21 +40,31 @@ pub type AnyhowResult<T = ()> = anyhow::Result<T>;
     Serialize, Deserialize, CandidType, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord,
 )]
 pub enum TargetCanister {
-    Governance,
-    Ledger,
+    Governance(Principal),
+    Ledger(Principal),
+}
+
+impl From<TargetCanister> for Principal {
+    fn from(target_canister: TargetCanister) -> Self {
+        match target_canister {
+            TargetCanister::Governance(principal) => principal,
+            TargetCanister::Ledger(principal) => principal,
+        }
+    }
 }
 
 /// Returns the candid interface definition (i.e. the contents of a .did file)
 /// for the target canister, if there is one.
 pub fn get_local_candid(target_canister: TargetCanister) -> AnyhowResult<String> {
-    if target_canister == TargetCanister::Governance {
-        String::from_utf8(include_bytes!("../../candid/governance.did").to_vec())
-            .context("Cannot load governance.did")
-    } else if target_canister == TargetCanister::Ledger {
-        String::from_utf8(include_bytes!("../../candid/ledger.did").to_vec())
-            .context("Cannot load ledger.did")
-    } else {
-        unreachable!()
+    match target_canister {
+        TargetCanister::Governance(_) => {
+            String::from_utf8(include_bytes!("../../candid/governance.did").to_vec())
+                .context("Cannot load governance.did")
+        }
+        TargetCanister::Ledger(_) => {
+            String::from_utf8(include_bytes!("../../candid/ledger.did").to_vec())
+                .context("Cannot load ledger.did")
+        }
     }
 }
 
@@ -149,8 +159,10 @@ pub fn require_pem(pem: &Option<String>) -> AnyhowResult<String> {
     }
 }
 
-pub fn require_canister_ids(canister_ids: &Option<CanisterIds>) -> AnyhowResult<CanisterIds> {
-    match canister_ids {
+pub fn require_canister_ids(
+    sns_canister_ids: &Option<SnsCanisterIds>,
+) -> AnyhowResult<SnsCanisterIds> {
+    match sns_canister_ids {
         None => Err(anyhow!(
             "Cannot sign command without knowing the SNS canister ids, did you forget --canister-ids-file <json-file> ?"
         )),
