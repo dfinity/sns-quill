@@ -1,14 +1,22 @@
-use crate::commands::transfer;
-use crate::lib::signing::{sign_ingress_with_request_status_query, IngressWithRequestId};
-use crate::lib::TargetCanister;
-use crate::{AnyhowResult, SnsCanisterIds};
+use crate::{
+    commands::transfer,
+    lib::{
+        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
+        TargetCanister,
+    },
+    AnyhowResult, SnsCanisterIds,
+};
 use candid::Encode;
 use clap::Parser;
 use ic_base_types::PrincipalId;
-use ic_sns_governance::pb::v1::manage_neuron;
-use ic_sns_governance::pb::v1::manage_neuron::claim_or_refresh::{By, MemoAndController};
-use ic_sns_governance::pb::v1::manage_neuron::ClaimOrRefresh;
-use ic_sns_governance::pb::v1::ManageNeuron;
+use ic_sns_governance::pb::v1::{
+    manage_neuron,
+    manage_neuron::{
+        claim_or_refresh::{By, MemoAndController},
+        ClaimOrRefresh,
+    },
+    ManageNeuron,
+};
 use ic_types::Principal;
 use ledger_canister::{AccountIdentifier, Subaccount};
 

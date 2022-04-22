@@ -1,17 +1,23 @@
-use crate::lib::signing::{sign_ingress_with_request_status_query, IngressWithRequestId};
-use crate::lib::{parse_neuron_id, TargetCanister};
-use crate::{AnyhowResult, SnsCanisterIds};
+use crate::{
+    lib::{
+        parse_neuron_id,
+        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
+        TargetCanister,
+    },
+    AnyhowResult, SnsCanisterIds,
+};
 use anyhow::{anyhow, Error};
 use candid::Encode;
 use clap::Parser;
 use ic_base_types::PrincipalId;
 
-use ic_sns_governance::pb::v1::manage_neuron;
-use ic_sns_governance::pb::v1::manage_neuron::configure::Operation;
-use ic_sns_governance::pb::v1::manage_neuron::{
-    Configure, IncreaseDissolveDelay, StartDissolving, StopDissolving,
+use ic_sns_governance::pb::v1::{
+    manage_neuron,
+    manage_neuron::{
+        configure::Operation, Configure, IncreaseDissolveDelay, StartDissolving, StopDissolving,
+    },
+    ManageNeuron,
 };
-use ic_sns_governance::pb::v1::ManageNeuron;
 
 // These constants are copied from src/governance.rs
 pub const ONE_DAY_SECONDS: u32 = 24 * 60 * 60;
@@ -36,14 +42,14 @@ pub struct ConfigureDissolveDelayOpts {
 
     /// When this argument is specified, the neuron will go into the dissolving state and a
     /// countdown timer will begin. When the timer is exhausted (i.e. dissolve_delay_seconds
-    /// amount of time has elapsed), the neuron can be disbursed.
+    /// amount of time has elapsed), the neuron can be disbursed
     #[clap(long)]
     start_dissolving: bool,
 
     /// When this argument is specified, the neuron will exit the dissolving state and whatever
     /// amount of dissolve delay seconds is left in the countdown timer is stored. A neuron's
     /// dissolve delay can be extended (for instance to increase voting power) by using the
-    /// additional_dissolve_delay_seconds flag.
+    /// additional_dissolve_delay_seconds flag
     #[clap(long)]
     stop_dissolving: bool,
 }

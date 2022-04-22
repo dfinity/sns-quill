@@ -1,6 +1,11 @@
-use crate::lib::signing::{sign_ingress_with_request_status_query, IngressWithRequestId};
-use crate::lib::{parse_neuron_id, TargetCanister};
-use crate::{AnyhowResult, SnsCanisterIds};
+use crate::{
+    lib::{
+        parse_neuron_id,
+        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
+        TargetCanister,
+    },
+    AnyhowResult, SnsCanisterIds,
+};
 use anyhow::Error;
 use candid::{Decode, Encode, IDLArgs};
 use clap::Parser;

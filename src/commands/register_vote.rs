@@ -1,11 +1,17 @@
-use crate::lib::signing::{sign_ingress_with_request_status_query, IngressWithRequestId};
-use crate::lib::{parse_neuron_id, TargetCanister};
-use crate::{AnyhowResult, SnsCanisterIds};
+use crate::{
+    lib::{
+        parse_neuron_id,
+        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
+        TargetCanister,
+    },
+    AnyhowResult, SnsCanisterIds,
+};
 use anyhow::{anyhow, Error};
 use candid::Encode;
 use clap::Parser;
-use ic_sns_governance::pb::v1::manage_neuron::RegisterVote;
-use ic_sns_governance::pb::v1::{manage_neuron, ManageNeuron, ProposalId, Vote};
+use ic_sns_governance::pb::v1::{
+    manage_neuron, manage_neuron::RegisterVote, ManageNeuron, ProposalId, Vote,
+};
 
 /// Signs a ManageNeuron message to register a vote for a proposal. Registering a vote will
 /// update the ballot of the given proposal and could trigger followees to vote. When

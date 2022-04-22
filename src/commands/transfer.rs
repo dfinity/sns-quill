@@ -1,8 +1,10 @@
-use crate::lib::{
-    signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
-    AnyhowResult, TargetCanister,
+use crate::{
+    lib::{
+        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
+        AnyhowResult, TargetCanister,
+    },
+    SnsCanisterIds,
 };
-use crate::SnsCanisterIds;
 use anyhow::{anyhow, bail, Context, Error};
 use candid::Encode;
 use clap::Parser;

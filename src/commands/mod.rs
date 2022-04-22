@@ -13,10 +13,10 @@ mod make_proposal;
 mod neuron_stake;
 mod public;
 mod qrcode;
+mod register_vote;
 mod request_status;
 mod send;
 mod transfer;
-mod register_vote;
 
 use crate::SnsCanisterIds;
 

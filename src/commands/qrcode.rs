@@ -1,5 +1,4 @@
-use crate::lib::qr::print_qr;
-use crate::lib::{read_from_file, AnyhowResult};
+use crate::lib::{qr::print_qr, read_from_file, AnyhowResult};
 use clap::Parser;
 
 #[derive(Parser)]

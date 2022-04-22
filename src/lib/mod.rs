@@ -18,10 +18,11 @@ use libsecp256k1::{PublicKey, SecretKey};
 use pem::{encode, Pem};
 use serde::{Deserialize, Serialize};
 use serde_cbor::Value;
-use simple_asn1::ASN1Block::{
-    BitString, Explicit, Integer, ObjectIdentifier, OctetString, Sequence,
+use simple_asn1::{
+    oid, to_der,
+    ASN1Block::{BitString, Explicit, Integer, ObjectIdentifier, OctetString, Sequence},
+    ASN1Class, BigInt, BigUint,
 };
-use simple_asn1::{oid, to_der, ASN1Class, BigInt, BigUint};
 
 pub const IC_URL: &str = "https://ic0.app";
 

@@ -1,6 +1,6 @@
-use crate::commands::send::send_unsigned_ingress;
-use crate::lib::TargetCanister;
-use crate::{AnyhowResult, SnsCanisterIds};
+use crate::{
+    commands::send::send_unsigned_ingress, lib::TargetCanister, AnyhowResult, SnsCanisterIds,
+};
 use anyhow::Error;
 use candid::Encode;
 use clap::Parser;
