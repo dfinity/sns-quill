@@ -196,6 +196,10 @@ Hence, if you would like to propose a change, please adhere to the following pri
 4. Every new feature (+ a test) is proposed only after it was tested on real wallets.
 5. Increment the last digit of the crate version whenever the functionality scope changes.
 
+### Canister Interfaces
+
+Due to the need to support cold wallets, the candid interface definition files for the SNS Canisters need to be available locally (`candid/`). These files are pulled from the latest releases of the various crates in the official [Internet Computer repo](https://github.com/dfinity/ic). New releases of `sns-quill` will be cut when new changes to the candid files need to be supported.
+
 ## Credit
 
 Originally forked from the [quill](https://github.com/dfinity/quill).
