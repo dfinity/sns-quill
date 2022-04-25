@@ -10,6 +10,7 @@ mod account_balance;
 mod configure_dissolve_delay;
 mod generate;
 mod make_proposal;
+mod make_upgrade_canister_proposal;
 mod neuron_stake;
 mod public;
 mod qrcode;
@@ -55,6 +56,8 @@ pub enum Command {
     QRCode(qrcode::QRCodeOpts),
     /// Sends signed messages to the Internet computer.
     Send(send::SendOpts),
+    /// Make a proposal to upgrade an SNS-controlled canister.
+    MakeUpgradeCanisterProposal(make_upgrade_canister_proposal::MakeUpgradeCanisterProposalOpts),
 }
 
 pub fn exec(
@@ -125,6 +128,11 @@ pub fn exec(
         }
         Command::QRCode(opts) => qrcode::exec(opts),
         Command::Send(opts) => runtime.block_on(async { send::exec(opts).await }),
+        Command::MakeUpgradeCanisterProposal(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            make_upgrade_canister_proposal::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
     }
 }
 
