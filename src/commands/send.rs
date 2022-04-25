@@ -13,7 +13,10 @@ use ic_agent::{
     agent::{http_transport::ReqwestHttpReplicaV2Transport, ReplicaV2Transport},
     RequestId,
 };
-use ic_sns_governance::pb::v1::ManageNeuronResponse;
+use ic_sns_governance::pb::v1::{
+    ListNervousSystemFunctionsResponse, ListNeuronsResponse, ListProposalsResponse,
+    ManageNeuronResponse,
+};
 use ledger_canister::{BlockHeight, Tokens, TransferError};
 use std::str::FromStr;
 
@@ -80,7 +83,7 @@ async fn send_ingress_and_check_status(
     }
     let (_, _, method_name, _) = &message.ingress.parse()?;
     let result = request_status::submit(&message.request_status).await?;
-    print_response(result, &method_name)?;
+    print_response(result, method_name)?;
     Ok(())
 }
 
@@ -135,6 +138,9 @@ enum SupportedResponse {
     ManageNeuronResponse,
     TransferResponse,
     AccountBalanceResponse,
+    ListNeuronResponse,
+    ListProposalsResponse,
+    ListNervousSystemFunctionsResponse,
 }
 
 impl FromStr for SupportedResponse {
@@ -145,6 +151,11 @@ impl FromStr for SupportedResponse {
             "account_balance" => Ok(SupportedResponse::AccountBalanceResponse),
             "transfer" => Ok(SupportedResponse::TransferResponse),
             "manage_neuron" => Ok(SupportedResponse::ManageNeuronResponse),
+            "list_neurons" => Ok(SupportedResponse::ListNeuronResponse),
+            "list_proposals" => Ok(SupportedResponse::ListProposalsResponse),
+            "list_nervous_system_functions" => {
+                Ok(SupportedResponse::ListNervousSystemFunctionsResponse)
+            }
             unsupported_response => Err(anyhow!(
                 "{} is not a supported response",
                 unsupported_response
@@ -153,21 +164,33 @@ impl FromStr for SupportedResponse {
     }
 }
 
-fn print_response(blob: Vec<u8>, method_name: &String) -> AnyhowResult {
-    let response_type = SupportedResponse::from_str(method_name.as_str())?;
+fn print_response(blob: Vec<u8>, method_name: &str) -> AnyhowResult {
+    let response_type = SupportedResponse::from_str(method_name)?;
 
     match response_type {
         SupportedResponse::AccountBalanceResponse => {
             let response = Decode!(blob.as_slice(), Tokens)?;
-            println!("Response: {:?\n}", response);
+            println!("Response: {:#?\n}", response);
         }
         SupportedResponse::TransferResponse => {
             let response = Decode!(blob.as_slice(), Result<BlockHeight, TransferError>)?;
-            println!("Response: {:?\n}", response);
+            println!("Response: {:#?\n}", response);
         }
         SupportedResponse::ManageNeuronResponse => {
             let response = Decode!(blob.as_slice(), ManageNeuronResponse)?;
-            println!("Response: {:?\n}", response);
+            println!("Response: {:#?\n}", response);
+        }
+        SupportedResponse::ListNeuronResponse => {
+            let response = Decode!(blob.as_slice(), ListNeuronsResponse)?;
+            println!("Response: {:#?\n}", response);
+        }
+        SupportedResponse::ListProposalsResponse => {
+            let response = Decode!(blob.as_slice(), ListProposalsResponse)?;
+            println!("Response: {:#?\n}", response);
+        }
+        SupportedResponse::ListNervousSystemFunctionsResponse => {
+            let response = Decode!(blob.as_slice(), ListNervousSystemFunctionsResponse)?;
+            println!("Response: {:#?\n}", response);
         }
     }
 

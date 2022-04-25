@@ -9,6 +9,9 @@ use tokio::runtime::Runtime;
 mod account_balance;
 mod configure_dissolve_delay;
 mod generate;
+mod list_nervous_system_functions;
+mod list_neurons;
+mod list_proposals;
 mod make_proposal;
 mod neuron_stake;
 mod public;
@@ -47,6 +50,12 @@ pub enum Command {
     /// enough votes are cast or enough time passes, the proposal will either be rejected or
     /// adopted and executed.
     RegisterVote(register_vote::RegisterVoteOpts),
+    /// Queries governance to list neurons staked in the governance canister
+    ListNeurons(list_neurons::ListNeuronsOpts),
+    /// Queries governance to list proposals submitted to the governance canister
+    ListProposals(list_proposals::ListProposalsOpts),
+    /// Queries governance to list NervousSystemFunctions registered with the governance canister
+    ListNervousSystemFunctions(list_nervous_system_functions::ListNervousSystemFunctionsOpts),
     /// Generate a mnemonic seed phrase and generate or recover PEM.
     Generate(generate::GenerateOpts),
     /// Print QR Scanner dapp QR code: scan to start dapp to submit QR results.
@@ -95,6 +104,19 @@ pub fn exec(
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             register_vote::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
+        Command::ListNeurons(opts) => {
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            runtime.block_on(async { list_neurons::exec(&canister_ids, opts).await })
+        }
+        Command::ListProposals(opts) => {
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            runtime.block_on(async { list_proposals::exec(&canister_ids, opts).await })
+        }
+        Command::ListNervousSystemFunctions(opts) => {
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            runtime
+                .block_on(async { list_nervous_system_functions::exec(&canister_ids, opts).await })
         }
         Command::Generate(opts) => generate::exec(opts),
         // QR code for URL: https://p5deo-6aaaa-aaaab-aaaxq-cai.raw.ic0.app/
