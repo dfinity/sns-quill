@@ -26,7 +26,7 @@ use ledger_canister::{AccountIdentifier, Subaccount};
 /// Governance to claim the neuron for the principal derived from the provided private key.
 #[derive(Parser)]
 pub struct NeuronStakeOpts {
-    /// The amount of tokens to be transferred to the Governance canister's ledger subaccount
+    /// The amount of tokens in e8s to be transferred to the Governance canister's ledger subaccount
     /// (the neuron's AccountId) from the AccountId derived from the provided private key. This is
     /// known as a staking transfer. These funds will be returned when disbursing the neuron. If NOT
     /// specified, no transfer will be made, and only a neuron claim command will be signed. This

@@ -62,7 +62,7 @@ pub fn exec(
     require_mutually_exclusive(
         opts.start_dissolving,
         opts.stop_dissolving,
-        opts.additional_dissolve_delay_seconds.clone(),
+        &opts.additional_dissolve_delay_seconds,
     )?;
 
     let neuron_id = parse_neuron_id(opts.neuron_id)?;
@@ -152,7 +152,7 @@ pub fn exec(
 fn require_mutually_exclusive(
     stop_dissolving: bool,
     start_dissolving: bool,
-    additional_dissolve_delay_seconds: Option<String>,
+    additional_dissolve_delay_seconds: &Option<String>,
 ) -> AnyhowResult {
     match (stop_dissolving, start_dissolving, additional_dissolve_delay_seconds) {
         (true, false, None) => Ok(()),

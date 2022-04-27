@@ -42,10 +42,9 @@ Account id: 40c7abdde72cb8b7838bba9290e78c8e6819507763447f38afaa2a07a82dafe0
 keys can be held in an air-gapped computer (a computer that has never connected to the internet) known as a cold wallet.
 To support cold wallets, `sns-quill` takes a two-phase approach to sending query/update calls to the IC.
 In the first phase, `sns-quill` is used with the various subcommands to generate and sign messages based on user input,
-without needing access to the internet. In the second phase, the signed message(s) is sent to the IC.
+without needing access to the internet. In the second phase, the signed message(s) are sent to the IC.
 Since this requires connection to boundary nodes via the internet, cold-wallet users will transport the signed message(s) from the
 air-gapped computer (i.e. with a USB stick) to a computer connected with the internet
-
 
 To route messages to the correct canister, the various SNS CanisterIds will need to be known ahead of time, and
 inputted to each subcommand. `sns-quill` has a required flag (`--canister-ids-file`) that reads a JSON file and
