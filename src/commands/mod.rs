@@ -21,6 +21,9 @@ mod register_vote;
 mod request_status;
 mod send;
 mod transfer;
+mod get_proposal;
+mod get_nervous_system_parameters;
+mod execute_nervous_system_function;
 
 use crate::SnsCanisterIds;
 
@@ -57,6 +60,9 @@ pub enum Command {
     ListProposals(list_proposals::ListProposalsOpts),
     /// Queries governance to list NervousSystemFunctions registered with the governance canister
     ListNervousSystemFunctions(list_nervous_system_functions::ListNervousSystemFunctionsOpts),
+    GetProposal(get_proposal::GetProposalsOpts),
+    GetNervousSystemParameters(get_nervous_system_parameters::GetNervousSystemParameterOpts),
+    ExecuteNervousSystemFunction(execute_nervous_system_function::ExecuteNervousSystemFunctionOpts),
     /// Generate a mnemonic seed phrase and generate or recover PEM.
     Generate(generate::GenerateOpts),
     /// Print QR Scanner dapp QR code: scan to start dapp to submit QR results.
@@ -103,6 +109,11 @@ pub fn exec(
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             make_proposal::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
+        Command::ExecuteNervousSystemFunction(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            execute_nervous_system_function::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
         Command::RegisterVote(opts) => {
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
@@ -120,6 +131,16 @@ pub fn exec(
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             runtime
                 .block_on(async { list_nervous_system_functions::exec(&canister_ids, opts).await })
+        }
+        Command::GetNervousSystemParameters(opts) => {
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            runtime
+                .block_on(async { get_nervous_system_parameters::exec(&canister_ids, opts).await })
+        }
+        Command::GetProposal(opts) => {
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            runtime
+                .block_on(async { get_proposal::exec(&canister_ids, opts).await })
         }
         Command::Generate(opts) => generate::exec(opts),
         // QR code for URL: https://p5deo-6aaaa-aaaab-aaaxq-cai.raw.ic0.app/

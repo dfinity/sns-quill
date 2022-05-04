@@ -13,10 +13,7 @@ use ic_agent::{
     agent::{http_transport::ReqwestHttpReplicaV2Transport, ReplicaV2Transport},
     RequestId,
 };
-use ic_sns_governance::pb::v1::{
-    ListNervousSystemFunctionsResponse, ListNeuronsResponse, ListProposalsResponse,
-    ManageNeuronResponse,
-};
+use ic_sns_governance::pb::v1::{GetProposalResponse, ListNervousSystemFunctionsResponse, ListNeuronsResponse, ListProposalsResponse, ManageNeuronResponse, NervousSystemParameters};
 use ledger_canister::{BlockHeight, Tokens, TransferError};
 use std::str::FromStr;
 
@@ -141,6 +138,8 @@ enum SupportedResponse {
     ListNeuronResponse,
     ListProposalsResponse,
     ListNervousSystemFunctionsResponse,
+    GetProposal,
+    GetNervousSystemParameters,
 }
 
 impl FromStr for SupportedResponse {
@@ -156,6 +155,8 @@ impl FromStr for SupportedResponse {
             "list_nervous_system_functions" => {
                 Ok(SupportedResponse::ListNervousSystemFunctionsResponse)
             }
+            "get_proposal" => Ok(SupportedResponse::GetProposal),
+            "get_nervous_system_parameters" => Ok(SupportedResponse::GetNervousSystemParameters),
             unsupported_response => Err(anyhow!(
                 "{} is not a supported response",
                 unsupported_response
@@ -190,6 +191,14 @@ fn print_response(blob: Vec<u8>, method_name: &str) -> AnyhowResult {
         }
         SupportedResponse::ListNervousSystemFunctionsResponse => {
             let response = Decode!(blob.as_slice(), ListNervousSystemFunctionsResponse)?;
+            println!("Response: {:#?\n}", response);
+        }
+        SupportedResponse::GetProposal => {
+            let response = Decode!(blob.as_slice(), GetProposalResponse)?;
+            println!("Response: {:#?\n}", response);
+        }
+        SupportedResponse::GetNervousSystemParameters => {
+            let response = Decode!(blob.as_slice(), NervousSystemParameters)?;
             println!("Response: {:#?\n}", response);
         }
     }
