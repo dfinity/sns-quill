@@ -97,7 +97,7 @@ To stake tokens in a neuron, two messages are required: a ledger transfer and a 
 `sns-quill` provides a single command to accomplish this.
 
 ```shell
-$ sns-quill --pem-file <path-to-file> --canister-ids-file <path-to-file> neuron-stake --memo <memo> --amount <amount>
+$ sns-quill --pem-file <path-to-file> --canister-ids-file <path-to-file> stake-neuron --memo <memo> --amount <amount>
 ```
 
 A successful submission of this command will result in a ClaimOrRefresh response containing the NeuronId.

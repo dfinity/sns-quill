@@ -3862,6 +3862,7 @@ dependencies = [
  "hex",
  "ic-agent",
  "ic-base-types",
+ "ic-nervous-system-common",
  "ic-sns-governance",
  "ic-types 0.3.0",
  "ledger-canister",

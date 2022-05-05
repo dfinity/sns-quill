@@ -11,12 +11,12 @@ mod configure_dissolve_delay;
 mod generate;
 mod make_proposal;
 mod make_upgrade_canister_proposal;
-mod neuron_stake;
 mod public;
 mod qrcode;
 mod register_vote;
 mod request_status;
 mod send;
+mod stake_neuron;
 mod transfer;
 
 use crate::SnsCanisterIds;
@@ -29,11 +29,11 @@ pub enum Command {
     AccountBalance(account_balance::AccountBalanceOpts),
     /// Signs a ledger transfer message to the provided 'to' account.
     Transfer(transfer::TransferOpts),
-    /// Signs messages needed to stake governance tokens for a neuron. First, neuron-stake will sign
+    /// Signs messages needed to stake governance tokens for a neuron. First, stake-neuron will sign
     /// a ledger transfer to a subaccount of the Governance canister calculated from the
-    /// provided private key and memo. Second, neuron-stake will sign a ManageNeuron message for
+    /// provided private key and memo. Second, stake-neuron will sign a ManageNeuron message for
     /// Governance to claim the neuron for the principal derived from the provided private key.
-    NeuronStake(neuron_stake::NeuronStakeOpts),
+    StakeNeuron(stake_neuron::StakeNeuronOpts),
     /// Signs a ManageNeuron message to configure the dissolve delay of a neuron. With this command
     /// neuron holders can start dissolving, stop dissolving, or increase dissolve delay. The
     /// dissolve delay of a neuron determines its voting power, its ability to vote, its ability
@@ -79,10 +79,10 @@ pub fn exec(
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             transfer::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
-        Command::NeuronStake(opts) => {
+        Command::StakeNeuron(opts) => {
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
-            neuron_stake::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+            stake_neuron::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
         Command::ConfigureDissolveDelay(opts) => {
             let pem = require_pem(private_key_pem)?;
@@ -130,8 +130,8 @@ pub fn exec(
         Command::QRCode(opts) => qrcode::exec(opts),
         Command::Send(opts) => runtime.block_on(async { send::exec(opts).await }),
         Command::MakeUpgradeCanisterProposal(opts) => {
-            let pem = require_pem(pem)?;
-            let canister_ids = require_canister_ids(canister_ids)?;
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
             make_upgrade_canister_proposal::exec(&pem, &canister_ids, opts)
                 .and_then(|out| print_vec(qr, &out))
         }
