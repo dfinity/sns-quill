@@ -64,26 +64,24 @@ pub fn exec(
     let neuron_subaccount = neuron_id.subaccount().map_err(Error::msg)?;
     let governance_canister_id = PrincipalId::from(sns_canister_ids.governance_canister_id).0;
 
-    let mut msgs = Vec::new();
+    let mut args = Vec::new();
 
     if opts.stop_dissolving {
-        let args = Encode!(&ManageNeuron {
+        args = Encode!(&ManageNeuron {
             subaccount: neuron_subaccount.to_vec(),
             command: Some(manage_neuron::Command::Configure(Configure {
                 operation: Some(Operation::StopDissolving(StopDissolving {}))
             })),
         })?;
-        msgs.push(args);
     }
 
     if opts.start_dissolving {
-        let args = Encode!(&ManageNeuron {
+        args = Encode!(&ManageNeuron {
             subaccount: neuron_subaccount.to_vec(),
             command: Some(manage_neuron::Command::Configure(Configure {
                 operation: Some(Operation::StartDissolving(StartDissolving {}))
             })),
         })?;
-        msgs.push(args);
     }
 
     if let Some(additional_dissolve_delay_seconds) = opts.additional_dissolve_delay_seconds {
@@ -91,7 +89,7 @@ pub fn exec(
             .parse::<u32>()
             .expect("Failed to parse the dissolve delay");
 
-        let args = Encode!(&ManageNeuron {
+        args = Encode!(&ManageNeuron {
             subaccount: neuron_subaccount.to_vec(),
             command: Some(manage_neuron::Command::Configure(Configure {
                 operation: Some(Operation::IncreaseDissolveDelay(IncreaseDissolveDelay {
@@ -99,19 +97,15 @@ pub fn exec(
                 }))
             })),
         })?;
-        msgs.push(args);
     };
 
-    let mut generated = Vec::new();
-    for args in msgs {
-        generated.push(sign_ingress_with_request_status_query(
-            private_key_pem,
-            "manage_neuron",
-            args,
-            TargetCanister::Governance(governance_canister_id),
-        )?);
-    }
-    Ok(generated)
+    let msg = sign_ingress_with_request_status_query(
+        private_key_pem,
+        "manage_neuron",
+        args,
+        TargetCanister::Governance(governance_canister_id),
+    )?;
+    Ok(vec![msg])
 }
 
 fn require_mutually_exclusive(
