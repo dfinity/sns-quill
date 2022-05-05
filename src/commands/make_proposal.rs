@@ -16,9 +16,9 @@ use ic_sns_governance::pb::v1::{manage_neuron, ManageNeuron, Proposal};
 /// holders.
 #[derive(Parser)]
 pub struct MakeProposalOpts {
-    /// The id of the neuron to configure as a hex encoded string. For example:
+    /// The id of the neuron making the proposal as a hex encoded string. For example:
     /// 83a7d2b12f654ff58335e5a2512ccae0d7839c744b1807a47c96f5b9f3969069
-    neuron_id: String,
+    proposer_neuron_id: String,
 
     /// The proposal to be submitted. The proposal must be formatted as a string
     /// wrapped candid record.
@@ -45,7 +45,7 @@ pub fn exec(
     sns_canister_ids: &SnsCanisterIds,
     opts: MakeProposalOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
-    let neuron_id = parse_neuron_id(opts.neuron_id)?;
+    let neuron_id = parse_neuron_id(opts.proposer_neuron_id)?;
     let neuron_subaccount = neuron_id.subaccount().map_err(Error::msg)?;
     let governance_canister_id = sns_canister_ids.governance_canister_id.get().0;
 
