@@ -1,14 +1,13 @@
-use crate::lib::get_ic_url;
-use crate::lib::{get_agent, signing::RequestStatus, AnyhowResult};
+use crate::lib::{get_agent, get_ic_url, signing::RequestStatus, AnyhowResult};
 use anyhow::{anyhow, Context};
-use ic_agent::agent::{ReplicaV2Transport, Replied, RequestStatusResponse};
-use ic_agent::AgentError::MessageError;
-use ic_agent::{Agent, AgentError, RequestId};
+use ic_agent::{
+    agent::{ReplicaV2Transport, Replied, RequestStatusResponse},
+    Agent, AgentError,
+    AgentError::MessageError,
+    RequestId,
+};
 use ic_types::Principal;
-use std::future::Future;
-use std::pin::Pin;
-use std::str::FromStr;
-use std::sync::Arc;
+use std::{future::Future, pin::Pin, str::FromStr, sync::Arc};
 
 pub async fn submit(req: &RequestStatus) -> AnyhowResult<Vec<u8>> {
     let canister_id =

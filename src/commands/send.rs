@@ -1,8 +1,10 @@
-use crate::commands::request_status;
-use crate::lib::{
-    get_ic_url, parse_query_response, read_from_file,
-    signing::{CallType, Ingress, IngressWithRequestId},
-    AnyhowResult, TargetCanister,
+use crate::{
+    commands::request_status,
+    lib::{
+        get_ic_url, parse_query_response, read_from_file,
+        signing::{CallType, Ingress, IngressWithRequestId},
+        AnyhowResult, TargetCanister,
+    },
 };
 use anyhow::{anyhow, Context};
 use candid::Decode;

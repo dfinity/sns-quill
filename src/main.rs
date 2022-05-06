@@ -6,10 +6,7 @@ use bip39::Mnemonic;
 use clap::{crate_version, Parser};
 use ic_base_types::CanisterId;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::fs::File;
-use std::path::PathBuf;
-use std::str::FromStr;
+use std::{collections::HashMap, fs::File, path::PathBuf, str::FromStr};
 
 mod commands;
 mod lib;

@@ -1,5 +1,4 @@
-use crate::lib::AnyhowResult;
-use crate::lib::{get_candid_type, get_idl_string, get_local_candid, TargetCanister};
+use crate::lib::{get_candid_type, get_idl_string, get_local_candid, AnyhowResult, TargetCanister};
 use anyhow::{anyhow, Context};
 use ic_agent::{
     agent::{QueryBuilder, UpdateBuilder},
@@ -8,9 +7,11 @@ use ic_agent::{
 use ic_types::principal::Principal;
 use serde::{Deserialize, Serialize};
 use serde_cbor::Value;
-use std::convert::TryFrom;
-use std::fmt::{Display, Formatter};
-use std::time::Duration;
+use std::{
+    convert::TryFrom,
+    fmt::{Display, Formatter},
+    time::Duration,
+};
 
 use super::get_agent;
 
