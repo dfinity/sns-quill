@@ -123,7 +123,7 @@ fn parse_canister_id(
     key_name: &str,
     canister_id_map: &HashMap<String, String>,
 ) -> AnyhowResult<CanisterId> {
-    let value = canister_id_map.get(key_name).ok_or(anyhow!(
+    let value = canister_id_map.get(key_name).ok_or_else(|| anyhow!(
         "'{}' is not present in --canister-ids-file <file>",
         key_name
     ))?;
@@ -243,7 +243,7 @@ fn test_canister_ids_from_non_existing_file() {
         .unwrap()
         .to_string();
 
-    read_sns_canister_ids(Some(non_existing_file.clone())).unwrap_err();
+    read_sns_canister_ids(Some(non_existing_file)).unwrap_err();
 }
 
 #[test]
