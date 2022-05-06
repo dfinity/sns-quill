@@ -123,10 +123,12 @@ fn parse_canister_id(
     key_name: &str,
     canister_id_map: &HashMap<String, String>,
 ) -> AnyhowResult<CanisterId> {
-    let value = canister_id_map.get(key_name).ok_or_else(|| anyhow!(
-        "'{}' is not present in --canister-ids-file <file>",
-        key_name
-    ))?;
+    let value = canister_id_map.get(key_name).ok_or_else(|| {
+        anyhow!(
+            "'{}' is not present in --canister-ids-file <file>",
+            key_name
+        )
+    })?;
     let canister_id = CanisterId::from_str(value)
         .map_err(|err| anyhow!("Could not parse CanisterId of '{}': {}", key_name, err))?;
     Ok(canister_id)
