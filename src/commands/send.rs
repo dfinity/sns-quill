@@ -78,9 +78,9 @@ async fn send_ingress_and_check_status(
     if opts.dry_run {
         return Ok(());
     }
-    let (_, _, method_name, _) = &message.ingress.parse()?;
+    let (_, _, method_name, _) = message.ingress.parse()?;
     let result = request_status::submit(&message.request_status).await?;
-    print_response(result, &method_name)?;
+    print_response(result, method_name)?;
     Ok(())
 }
 
@@ -114,7 +114,7 @@ async fn send(message: &Ingress, opts: &SendOpts) -> AnyhowResult {
     match message.call_type {
         CallType::Query => {
             let response = parse_query_response(transport.query(canister_id, content).await?)?;
-            print_response(response, &method_name)?;
+            print_response(response, method_name)?;
         }
         CallType::Update => {
             let request_id = RequestId::from_str(
@@ -132,9 +132,9 @@ async fn send(message: &Ingress, opts: &SendOpts) -> AnyhowResult {
 }
 
 enum SupportedResponse {
-    ManageNeuronResponse,
-    TransferResponse,
-    AccountBalanceResponse,
+    ManageNeuron,
+    Transfer,
+    AccountBalance,
 }
 
 impl FromStr for SupportedResponse {
@@ -142,9 +142,9 @@ impl FromStr for SupportedResponse {
 
     fn from_str(input: &str) -> Result<SupportedResponse, Self::Err> {
         match input {
-            "account_balance" => Ok(SupportedResponse::AccountBalanceResponse),
-            "transfer" => Ok(SupportedResponse::TransferResponse),
-            "manage_neuron" => Ok(SupportedResponse::ManageNeuronResponse),
+            "account_balance" => Ok(SupportedResponse::AccountBalance),
+            "transfer" => Ok(SupportedResponse::Transfer),
+            "manage_neuron" => Ok(SupportedResponse::ManageNeuron),
             unsupported_response => Err(anyhow!(
                 "{} is not a supported response",
                 unsupported_response
@@ -153,19 +153,19 @@ impl FromStr for SupportedResponse {
     }
 }
 
-fn print_response(blob: Vec<u8>, method_name: &String) -> AnyhowResult {
+fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
     let response_type = SupportedResponse::from_str(method_name.as_str())?;
 
     match response_type {
-        SupportedResponse::AccountBalanceResponse => {
+        SupportedResponse::AccountBalance => {
             let response = Decode!(blob.as_slice(), Tokens)?;
             println!("Response: {:?\n}", response);
         }
-        SupportedResponse::TransferResponse => {
+        SupportedResponse::Transfer => {
             let response = Decode!(blob.as_slice(), Result<BlockHeight, TransferError>)?;
             println!("Response: {:?\n}", response);
         }
-        SupportedResponse::ManageNeuronResponse => {
+        SupportedResponse::ManageNeuron => {
             let response = Decode!(blob.as_slice(), ManageNeuronResponse)?;
             println!("Response: {:?\n}", response);
         }

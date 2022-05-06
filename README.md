@@ -149,7 +149,7 @@ $ sns-quill --pem-file <path-to-file> --canister-ids-file <path-to-file> registe
 
 ## Download
 
-Use binaries from the latest [release](https://github.com/DanielThurau/sns-quill/releases).
+Use binaries from the latest [release](https://github.com/dfinity/sns-quill/releases).
 
 ## Build
 

@@ -69,7 +69,7 @@ pub fn exec(
             sns_canister_ids,
             transfer::TransferOpts {
                 to: account.to_hex(),
-                amount: amount.clone(),
+                amount,
                 fee: opts.fee,
                 memo: Some(opts.memo.to_string()),
             },
