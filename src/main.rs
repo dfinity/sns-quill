@@ -7,6 +7,7 @@ use clap::{crate_version, Parser};
 use ic_base_types::CanisterId;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs::File, path::PathBuf, str::FromStr};
+use serde_json::Value;
 
 mod commands;
 mod lib;
@@ -48,6 +49,7 @@ pub struct SnsCanisterIds {
     pub governance_canister_id: CanisterId,
     pub ledger_canister_id: CanisterId,
     pub root_canister_id: CanisterId,
+    pub dapp_canister_id_list: Vec<CanisterId>,
 }
 
 fn main() {
@@ -105,33 +107,73 @@ fn read_sns_canister_ids(file_path: Option<String>) -> AnyhowResult<Option<SnsCa
 
     let path = PathBuf::from(file_path);
     let file = File::open(path).context("Could not open the SNS Canister Ids file")?;
-    let ids: HashMap<String, String> =
+    let ids: HashMap<String, Value> =
         serde_json::from_reader(file).context("Could not parse the SNS Canister Ids file")?;
 
     let governance_canister_id = parse_canister_id("governance_canister_id", &ids)?;
     let ledger_canister_id = parse_canister_id("ledger_canister_id", &ids)?;
     let root_canister_id = parse_canister_id("root_canister_id", &ids)?;
 
+    let dapp_canister_id_list = match parse_dapp_canister_id_list("dapp_canister_id_list", &ids) {
+        Ok(v) => v,
+        Err(err) => {
+            eprintln!("{}", err);
+            vec![]
+        },
+    };
+
     Ok(Some(SnsCanisterIds {
         governance_canister_id,
         ledger_canister_id,
         root_canister_id,
+        dapp_canister_id_list,
     }))
 }
 
 fn parse_canister_id(
     key_name: &str,
-    canister_id_map: &HashMap<String, String>,
+    canister_id_map: &HashMap<String, Value>,
 ) -> AnyhowResult<CanisterId> {
-    let value = canister_id_map.get(key_name).ok_or_else(|| {
-        anyhow!(
-            "'{}' is not present in --canister-ids-file <file>",
-            key_name
-        )
-    })?;
-    let canister_id = CanisterId::from_str(value)
-        .map_err(|err| anyhow!("Could not parse CanisterId of '{}': {}", key_name, err))?;
-    Ok(canister_id)
+    let value = canister_id_map.get(key_name).ok_or(anyhow!(
+        "'{}' is not present in --canister-ids-file <file>",
+        key_name
+    ))?;
+    if let Value::String(str) = value {
+        let canister_id = CanisterId::from_str(str)
+            .map_err(|err| anyhow!("Could not parse CanisterId of '{}': {}", key_name, err))?;
+        Ok(canister_id)
+    } else {
+        Err(anyhow!("Couldnt read {} as a string", key_name))
+    }
+}
+
+fn parse_dapp_canister_id_list(
+    key_name: &str,
+    canister_id_map: &HashMap<String, Value>,
+) -> AnyhowResult<Vec<CanisterId>> {
+    let value = canister_id_map.get(key_name).ok_or(anyhow!(
+        "'{}' is not present in --canister-ids-file <file>",
+        key_name
+    ))?;
+    let mut canister_id_vec: Vec<CanisterId> = vec![];
+    match value {
+        Value::Array(id_array) => {
+            for id in id_array {
+                if let Value::String(str) = id {
+                    let canister_id = CanisterId::from_str(str)
+                        .map_err(|err| anyhow!("Could not parse {} as a CanisterId: {}", str, err))?;
+                    canister_id_vec.push(canister_id);
+                }
+            }
+            Ok(canister_id_vec)
+        },
+        Value::String(str) => {
+            let canister_id = CanisterId::from_str(str)
+                .map_err(|err| anyhow!("Could not parse {} as a CanisterId: {}", str, err))?;
+            Ok(vec![canister_id])
+        }
+        _ => Err(anyhow!("Failed to parse field {} as either a String or an Array", key_name)),
+    }
 }
 
 fn parse_mnemonic(phrase: &str) -> AnyhowResult<Mnemonic> {
