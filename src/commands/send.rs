@@ -13,7 +13,9 @@ use ic_agent::{
     agent::{http_transport::ReqwestHttpReplicaV2Transport, ReplicaV2Transport},
     RequestId,
 };
-use ic_sns_governance::pb::v1::ManageNeuronResponse;
+use ic_base_types::PrincipalId;
+use ic_ic00_types::CanisterStatusResultV2;
+use ic_sns_governance::pb::v1::{ManageNeuronResponse, NervousSystemParameters};
 use ledger_canister::{BlockHeight, Tokens, TransferError};
 use std::str::FromStr;
 
@@ -135,6 +137,8 @@ enum SupportedResponse {
     ManageNeuron,
     Transfer,
     AccountBalance,
+    SnsCanistersSummary,
+    NervousSystemParameters,
 }
 
 impl FromStr for SupportedResponse {
@@ -145,6 +149,8 @@ impl FromStr for SupportedResponse {
             "account_balance" => Ok(SupportedResponse::AccountBalance),
             "transfer" => Ok(SupportedResponse::Transfer),
             "manage_neuron" => Ok(SupportedResponse::ManageNeuron),
+            "get_sns_canisters_summary" => Ok(SupportedResponse::SnsCanistersSummary),
+            "get_nervous_system_parameters" => Ok(SupportedResponse::NervousSystemParameters),
             unsupported_response => Err(anyhow!(
                 "{} is not a supported response",
                 unsupported_response
@@ -168,6 +174,126 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
         SupportedResponse::ManageNeuron => {
             let response = Decode!(blob.as_slice(), ManageNeuronResponse)?;
             println!("Response: {:?\n}", response);
+        }
+        SupportedResponse::SnsCanistersSummary => {
+            let response: Vec<(String, PrincipalId, CanisterStatusResultV2)> = Decode!(
+                blob.as_slice(),
+                Vec<(String, PrincipalId, CanisterStatusResultV2)>
+            )?;
+            for (name, principal, canister_status) in response.into_iter() {
+                println!("\nCanister Summary:");
+                println!("name: {}", name);
+                println!("id: {}", principal);
+                println!("controller: {}", canister_status.controller());
+                println!("status: {}", canister_status.status());
+                println!(
+                    "module hash: {}",
+                    &canister_status
+                        .module_hash()
+                        .map_or("None".to_string(), |hash| hex::encode(hash))
+                );
+                println!("memory size: {}", canister_status.memory_size());
+                println!("cycles: {}", canister_status.cycles());
+                println!(
+                    "freezing threshold: {}",
+                    canister_status.freezing_threshold()
+                );
+            }
+        }
+        SupportedResponse::NervousSystemParameters => {
+            let response = Decode!(blob.as_slice(), NervousSystemParameters)?;
+            println!("\nNervous System Parameters:");
+            println!(
+                "reject cost e8: {}",
+                response
+                    .reject_cost_e8s
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            println!(
+                "transaction fee e8: {}",
+                response
+                    .transaction_fee_e8s
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            println!(
+                "max proposals to keep per action: {}",
+                response
+                    .max_proposals_to_keep_per_action
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            println!(
+                "initial voting period: {}",
+                response
+                    .initial_voting_period
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            // TODO(alejandro): improve the display of default followees
+            println!(
+                "default followees: {:#?}",
+                response
+                    .default_followees
+                    .map_or("None".to_string(), |field| format!("{:#?}", field))
+            );
+            println!(
+                "max number of neurons: {}",
+                response
+                    .max_number_of_neurons
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            println!(
+                "neuron minimum dissolve delay to vote seconds: {}",
+                response
+                    .neuron_minimum_dissolve_delay_to_vote_seconds
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            println!(
+                "max followees per action: {}",
+                response
+                    .max_followees_per_action
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            println!(
+                "max dissolve delay seconds:  {}",
+                response
+                    .max_dissolve_delay_seconds
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            println!(
+                "max neuron age for age_bonus:  {}",
+                response
+                    .max_neuron_age_for_age_bonus
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            println!(
+                "reward distribution period seconds: {}",
+                response
+                    .reward_distribution_period_seconds
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            println!(
+                "max number of proposals with ballots: {}",
+                response
+                    .max_number_of_proposals_with_ballots
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
+            println!(
+                "neuron claimer permissions: {}",
+                response
+                    .neuron_claimer_permissions
+                    .map_or("None".to_string(), |field| format!("{:#?}", field))
+            );
+            println!(
+                "neuron grantable permissions: {}",
+                response
+                    .neuron_grantable_permissions
+                    .map_or("None".to_string(), |field| format!("{:#?}", field))
+            );
+            println!(
+                "max number of principals per neuron: {}",
+                response
+                    .max_number_of_principals_per_neuron
+                    .map_or("None".to_string(), |field| field.to_string())
+            );
         }
     }
 

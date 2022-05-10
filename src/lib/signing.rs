@@ -119,6 +119,38 @@ pub fn request_status_sign(
     })
 }
 
+pub fn sign_query_as_ingress_with_request_id(
+    pem: &str,
+    method_name: &str,
+    args: Vec<u8>,
+    target_canister: TargetCanister,
+) -> AnyhowResult<IngressWithRequestId> {
+    let ingress_expiry = Duration::from_secs(5 * 60);
+    let canister_id = Principal::from(target_canister);
+
+    let signed_update = UpdateBuilder::new(&get_agent(pem)?, canister_id, method_name.to_string())
+        .with_arg(args)
+        .expire_after(ingress_expiry)
+        .sign()?;
+
+    let content = hex::encode(signed_update.signed_update);
+    let request_id = signed_update.request_id;
+
+    let canister_id = Principal::from(target_canister);
+    let request_status = request_status_sign(pem, request_id, canister_id)?;
+
+    let message = IngressWithRequestId {
+        ingress: Ingress {
+            call_type: CallType::Update,
+            request_id: Some(request_id).map(|v| v.into()),
+            content,
+            target_canister,
+        },
+        request_status,
+    };
+    Ok(message)
+}
+
 pub fn sign(
     pem: &str,
     method_name: &str,

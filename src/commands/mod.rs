@@ -11,11 +11,14 @@ mod configure_dissolve_delay;
 mod generate;
 mod make_proposal;
 mod make_upgrade_canister_proposal;
+mod nervous_system_parameters;
 mod public;
 mod qrcode;
 mod register_vote;
 mod request_status;
 mod send;
+mod sns_canisters_summary;
+mod sns_summary;
 mod stake_neuron;
 mod transfer;
 
@@ -59,6 +62,12 @@ pub enum Command {
     /// Signs a ManageNeuron message to submit a UpgradeSnsControlledCanister
     /// proposal.
     MakeUpgradeCanisterProposal(make_upgrade_canister_proposal::MakeUpgradeCanisterProposalOpts),
+    /// Prints a summary with general info about the sns.
+    SnsSummary(sns_summary::SnsSummaryOps),
+    /// Prints info about the canisters belonging to this sns.
+    SnsCanistersSummary(sns_canisters_summary::SnsCanistersSummaryOps),
+    /// Prints info about the system parameters in this sns.
+    NervousSystemParameters,
 }
 
 pub fn exec(
@@ -134,6 +143,21 @@ pub fn exec(
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             make_upgrade_canister_proposal::exec(&pem, &canister_ids, opts)
                 .and_then(|out| print_vec(qr, &out))
+        }
+        Command::SnsSummary(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            sns_summary::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
+        Command::SnsCanistersSummary(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            sns_canisters_summary::exec(&pem, &canister_ids, opts)
+                .and_then(|out| print_vec(qr, &out))
+        }
+        Command::NervousSystemParameters => {
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            nervous_system_parameters::exec(&canister_ids).and_then(|out| print_vec(qr, &out))
         }
     }
 }
