@@ -134,10 +134,12 @@ fn parse_canister_id(
     key_name: &str,
     canister_id_map: &HashMap<String, Value>,
 ) -> AnyhowResult<CanisterId> {
-    let value = canister_id_map.get(key_name).ok_or(anyhow!(
-        "'{}' is not present in --canister-ids-file <file>",
-        key_name
-    ))?;
+    let value = canister_id_map.get(key_name).ok_or_else(|| {
+        anyhow!(
+            "'{}' is not present in --canister-ids-file <file>",
+            key_name
+        )
+    })?;
     if let Value::String(str) = value {
         let canister_id = CanisterId::from_str(str)
             .map_err(|err| anyhow!("Could not parse CanisterId of '{}': {}", key_name, err))?;
@@ -151,10 +153,12 @@ fn parse_dapp_canister_id_list(
     key_name: &str,
     canister_id_map: &HashMap<String, Value>,
 ) -> AnyhowResult<Vec<CanisterId>> {
-    let value = canister_id_map.get(key_name).ok_or(anyhow!(
-        "'{}' is not present in --canister-ids-file <file>",
-        key_name
-    ))?;
+    let value = canister_id_map.get(key_name).ok_or_else(|| {
+        anyhow!(
+            "'{}' is not present in --canister-ids-file <file>",
+            key_name
+        )
+    })?;
     let mut canister_id_vec: Vec<CanisterId> = vec![];
     match value {
         Value::Array(id_array) => {
