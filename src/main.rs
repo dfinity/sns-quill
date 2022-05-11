@@ -6,8 +6,8 @@ use bip39::Mnemonic;
 use clap::{crate_version, Parser};
 use ic_base_types::CanisterId;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs::File, path::PathBuf, str::FromStr};
 use serde_json::Value;
+use std::{collections::HashMap, fs::File, path::PathBuf, str::FromStr};
 
 mod commands;
 mod lib;
@@ -119,7 +119,7 @@ fn read_sns_canister_ids(file_path: Option<String>) -> AnyhowResult<Option<SnsCa
         Err(err) => {
             eprintln!("{}", err);
             vec![]
-        },
+        }
     };
 
     Ok(Some(SnsCanisterIds {
@@ -160,19 +160,23 @@ fn parse_dapp_canister_id_list(
         Value::Array(id_array) => {
             for id in id_array {
                 if let Value::String(str) = id {
-                    let canister_id = CanisterId::from_str(str)
-                        .map_err(|err| anyhow!("Could not parse {} as a CanisterId: {}", str, err))?;
+                    let canister_id = CanisterId::from_str(str).map_err(|err| {
+                        anyhow!("Could not parse {} as a CanisterId: {}", str, err)
+                    })?;
                     canister_id_vec.push(canister_id);
                 }
             }
             Ok(canister_id_vec)
-        },
+        }
         Value::String(str) => {
             let canister_id = CanisterId::from_str(str)
                 .map_err(|err| anyhow!("Could not parse {} as a CanisterId: {}", str, err))?;
             Ok(vec![canister_id])
         }
-        _ => Err(anyhow!("Failed to parse field {} as either a String or an Array", key_name)),
+        _ => Err(anyhow!(
+            "Failed to parse field {} as either a String or an Array",
+            key_name
+        )),
     }
 }
 
@@ -262,6 +266,7 @@ fn test_read_canister_ids_from_file() {
         governance_canister_id: CanisterId::from_str("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap(),
         ledger_canister_id: CanisterId::from_str("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap(),
         root_canister_id: CanisterId::from_str("r7inp-6aaaa-aaaaa-aaabq-cai").unwrap(),
+        dapp_canister_id_list: vec![],
     };
 
     let json_str = serde_json::to_string(&expected_canister_ids).unwrap();
