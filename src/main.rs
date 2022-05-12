@@ -36,6 +36,7 @@ pub struct CliOpts {
     ///   "governance_canister_id": "rrkah-fqaaa-aaaaa-aaaaq-cai",
     ///   "ledger_canister_id": "ryjl3-tyaaa-aaaaa-aaaba-cai",
     ///   "root_canister_id": "r7inp-6aaaa-aaaaa-aaabq-cai"
+    ///   "dapp_canister_id_list": [],
     /// }
     #[clap(long)]
     canister_ids_file: Option<String>,
@@ -95,6 +96,7 @@ fn read_pem(pem_file: Option<String>, seed_file: Option<String>) -> AnyhowResult
 ///   1. governance_canister_id
 ///   2. ledger_canister_id
 ///   3. root_canister_id
+///   4. dapp_canister_id_list (array)
 ///
 /// If no file_path is provided (i.e. not provided as input to the command), do nothing and return
 /// Ok(None). If the file_path is provided, but the file is malformed, Err is returned. Else, return
@@ -114,13 +116,7 @@ fn read_sns_canister_ids(file_path: Option<String>) -> AnyhowResult<Option<SnsCa
     let ledger_canister_id = parse_canister_id("ledger_canister_id", &ids)?;
     let root_canister_id = parse_canister_id("root_canister_id", &ids)?;
 
-    let dapp_canister_id_list = match parse_dapp_canister_id_list("dapp_canister_id_list", &ids) {
-        Ok(v) => v,
-        Err(err) => {
-            eprintln!("{}", err);
-            vec![]
-        }
-    };
+    let dapp_canister_id_list = parse_dapp_canister_id_list("dapp_canister_id_list", &ids)?;
 
     Ok(Some(SnsCanisterIds {
         governance_canister_id,
@@ -171,11 +167,6 @@ fn parse_dapp_canister_id_list(
                 }
             }
             Ok(canister_id_vec)
-        }
-        Value::String(str) => {
-            let canister_id = CanisterId::from_str(str)
-                .map_err(|err| anyhow!("Could not parse {} as a CanisterId: {}", str, err))?;
-            Ok(vec![canister_id])
         }
         _ => Err(anyhow!(
             "Failed to parse field {} as either a String or an Array",
@@ -262,6 +253,34 @@ fn test_read_pem_from_non_existing_file() {
 
 #[test]
 fn test_read_canister_ids_from_file() {
+    use std::io::Write;
+
+    let mut canister_ids_file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
+
+    let expected_canister_ids = SnsCanisterIds {
+        governance_canister_id: CanisterId::from_str("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap(),
+        ledger_canister_id: CanisterId::from_str("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap(),
+        root_canister_id: CanisterId::from_str("r7inp-6aaaa-aaaaa-aaabq-cai").unwrap(),
+        dapp_canister_id_list: vec![
+            CanisterId::from_str("rdmx6-jaaaa-aaaaa-aaadq-cai").unwrap(),
+            CanisterId::from_str("qoctq-giaaa-aaaaa-aaaea-cai").unwrap(),
+        ],
+    };
+
+    let json_str = serde_json::to_string(&expected_canister_ids).unwrap();
+
+    write!(canister_ids_file, "{}", json_str).expect("Cannot write to tmp file");
+
+    let actual_canister_ids =
+        read_sns_canister_ids(Some(canister_ids_file.path().to_str().unwrap().to_string()))
+            .expect("Unable to read canister_ids_file")
+            .expect("None returned instead of Some");
+
+    assert_eq!(actual_canister_ids, expected_canister_ids);
+}
+
+#[test]
+fn test_read_canister_ids_from_file_empty_dapp_canister_id_list() {
     use std::io::Write;
 
     let mut canister_ids_file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
