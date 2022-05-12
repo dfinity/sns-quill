@@ -169,7 +169,7 @@ fn parse_dapp_canister_id_list(
             Ok(canister_id_vec)
         }
         _ => Err(anyhow!(
-            "Failed to parse field {} as either a String or an Array",
+            "Failed to parse field {} as an Array",
             key_name
         )),
     }
