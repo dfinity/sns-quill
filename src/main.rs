@@ -36,7 +36,9 @@ pub struct CliOpts {
     ///   "governance_canister_id": "rrkah-fqaaa-aaaaa-aaaaq-cai",
     ///   "ledger_canister_id": "ryjl3-tyaaa-aaaaa-aaaba-cai",
     ///   "root_canister_id": "r7inp-6aaaa-aaaaa-aaabq-cai"
-    ///   "dapp_canister_id_list": [],
+    ///   "dapp_canister_id_list": [
+    ///.      "qoctq-giaaa-aaaaa-aaaea-cai"
+    ///.   ],
     /// }
     #[clap(long)]
     canister_ids_file: Option<String>,
