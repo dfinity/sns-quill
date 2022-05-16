@@ -184,18 +184,19 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
                 println!("\nCanister Summary:");
                 println!("name: {}", name);
                 println!("id: {}", principal);
+                // TODO(alejandro), add field controllers, NNS1-1396.
                 println!("controller: {}", canister_status.controller());
                 println!("status: {}", canister_status.status());
                 println!(
-                    "module hash: {}",
+                    "module_hash: {}",
                     &canister_status
                         .module_hash()
-                        .map_or("None".to_string(), |hash| hex::encode(hash))
+                        .map_or("None".to_string(), hex::encode)
                 );
-                println!("memory size: {}", canister_status.memory_size());
+                println!("memory_size: {}", canister_status.memory_size());
                 println!("cycles: {}", canister_status.cycles());
                 println!(
-                    "freezing threshold: {}",
+                    "freezing_threshold: {}",
                     canister_status.freezing_threshold()
                 );
             }
@@ -204,92 +205,92 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
             let response = Decode!(blob.as_slice(), NervousSystemParameters)?;
             println!("\nNervous System Parameters:");
             println!(
-                "reject cost e8: {}",
+                "reject_cost_e8: {}",
                 response
                     .reject_cost_e8s
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "transaction fee e8: {}",
+                "transaction_fee_e8: {}",
                 response
                     .transaction_fee_e8s
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "max proposals to keep per action: {}",
+                "max_proposals_to_keep_per_action: {}",
                 response
                     .max_proposals_to_keep_per_action
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "initial voting period: {}",
+                "initial_voting_period: {}",
                 response
                     .initial_voting_period
                     .map_or("None".to_string(), |field| field.to_string())
             );
-            // TODO(alejandro): improve the display of default followees
+            // TODO(alejandro): improve the display of default followees, NNS1-1395.
             println!(
-                "default followees: {:#?}",
+                "default_followees: {:#?}",
                 response
                     .default_followees
                     .map_or("None".to_string(), |field| format!("{:#?}", field))
             );
             println!(
-                "max number of neurons: {}",
+                "max_number_of_neurons: {}",
                 response
                     .max_number_of_neurons
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "neuron minimum dissolve delay to vote seconds: {}",
+                "neuron_minimum_dissolve_delay_to_vote_seconds: {}",
                 response
                     .neuron_minimum_dissolve_delay_to_vote_seconds
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "max followees per action: {}",
+                "max_followees_per_action: {}",
                 response
                     .max_followees_per_action
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "max dissolve delay seconds:  {}",
+                "max_dissolve_delay_seconds:  {}",
                 response
                     .max_dissolve_delay_seconds
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "max neuron age for age_bonus:  {}",
+                "max_neuron_age_for_age_bonus:  {}",
                 response
                     .max_neuron_age_for_age_bonus
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "reward distribution period seconds: {}",
+                "reward_distribution_period_seconds: {}",
                 response
                     .reward_distribution_period_seconds
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "max number of proposals with ballots: {}",
+                "max_number_of_proposals_with_ballots: {}",
                 response
                     .max_number_of_proposals_with_ballots
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "neuron claimer permissions: {}",
+                "neuron_claimer_permissions: {}",
                 response
                     .neuron_claimer_permissions
                     .map_or("None".to_string(), |field| format!("{:#?}", field))
             );
             println!(
-                "neuron grantable permissions: {}",
+                "neuron_grantable_permissions: {}",
                 response
                     .neuron_grantable_permissions
                     .map_or("None".to_string(), |field| format!("{:#?}", field))
             );
             println!(
-                "max number of principals per neuron: {}",
+                "max_number_of_principals_per_neuron: {}",
                 response
                     .max_number_of_principals_per_neuron
                     .map_or("None".to_string(), |field| field.to_string())

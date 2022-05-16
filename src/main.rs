@@ -35,7 +35,7 @@ pub struct CliOpts {
     /// {
     ///   "governance_canister_id": "rrkah-fqaaa-aaaaa-aaaaq-cai",
     ///   "ledger_canister_id": "ryjl3-tyaaa-aaaaa-aaaba-cai",
-    ///   "root_canister_id": "r7inp-6aaaa-aaaaa-aaabq-cai"
+    ///   "root_canister_id": "r7inp-6aaaa-aaaaa-aaabq-cai",
     ///   "dapp_canister_id_list": [
     ///.      "qoctq-giaaa-aaaaa-aaaea-cai"
     ///.   ],
@@ -132,10 +132,12 @@ fn parse_canister_id(
     key_name: &str,
     canister_id_map: &HashMap<String, Value>,
 ) -> AnyhowResult<CanisterId> {
-    let value = canister_id_map.get(key_name).ok_or(anyhow!(
-        "'{}' is not present in --canister-ids-file <file>",
-        key_name
-    ))?;
+    let value = canister_id_map.get(key_name).ok_or_else(|| {
+        anyhow!(
+            "'{}' is not present in --canister-ids-file <file>",
+            key_name
+        )
+    })?;
     if let Value::String(str) = value {
         let canister_id = CanisterId::from_str(str)
             .map_err(|err| anyhow!("Could not parse CanisterId of '{}': {}", key_name, err))?;
