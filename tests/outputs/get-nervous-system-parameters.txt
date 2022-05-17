@@ -1,0 +1,7 @@
+Sending message with
+
+  Call type:   update
+  Sender:      2vxsx-fae
+  Canister id: rrkah-fqaaa-aaaaa-aaaaq-cai
+  Method name: get_nervous_system_parameters
+  Arguments:   (null : null)

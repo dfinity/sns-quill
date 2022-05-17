@@ -1,0 +1,7 @@
+Sending message with
+
+  Call type:   update
+  Sender:      fdsgv-62ihb-nbiqv-xgic5-iefsv-3cscz-tmbzv-63qd5-vh43v-dqfrt-pae
+  Canister id: r7inp-6aaaa-aaaaa-aaabq-cai
+  Method name: get_sns_canisters_summary
+  Arguments:   (vec {})
