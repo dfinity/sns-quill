@@ -136,7 +136,6 @@ pub fn sign_query_as_ingress_with_request_id(
     let content = hex::encode(signed_update.signed_update);
     let request_id = signed_update.request_id;
 
-    let canister_id = Principal::from(target_canister);
     let request_status = request_status_sign(pem, request_id, canister_id)?;
 
     let message = IngressWithRequestId {
