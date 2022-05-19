@@ -68,7 +68,7 @@ pub enum Command {
     /// Outputs info about the sns canisters: Governance, Ledger, Root and canisters belonging to
     /// the controlled dapp. Info includes cycles, ownership and more.
     SnsCanistersSummary,
-    /// Prints info about the system parameters in this sns. These include the cost of rejected
+    /// Prints the NervousSystemParameters for an SNS. These include the cost of rejected
     /// proposal, the initial voting time, the reward distribution period, and others.
     GetNervousSystemParameters,
 }
