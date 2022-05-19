@@ -62,8 +62,8 @@ pub enum Command {
     /// Signs a ManageNeuron message to submit a UpgradeSnsControlledCanister
     /// proposal.
     MakeUpgradeCanisterProposal(make_upgrade_canister_proposal::MakeUpgradeCanisterProposalOpts),
-    /// Prints a comprehensive overview of the sns. Includes sns canisters info and nervous system
-    /// parameters.
+    /// Prints a comprehensive overview of an SNS. Includes SNS canisters info and 
+    /// its NervousSystemParameters.
     Summary,
     /// Outputs canister info about the canisters of an SNS. These include Governance, Ledger, Root, and 
     /// dapp canisters. Info includes cycles, ownership and more.
