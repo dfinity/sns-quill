@@ -10,7 +10,8 @@ pub fn exec(sns_canister_ids: &SnsCanisterIds) -> AnyhowResult<Vec<IngressWithRe
     let governance_canister_id = PrincipalId::from(sns_canister_ids.governance_canister_id).0;
     let args = Encode!()?;
 
-    let msg = sign_query_as_ingress_with_request_id(
+    // We want the message as an IngressWithRequestId so that it can be batched with other commands.
+    let msg: IngressWithRequestId = sign_query_as_ingress_with_request_id(
         "",
         "get_nervous_system_parameters",
         args,

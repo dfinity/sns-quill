@@ -1,4 +1,4 @@
-use crate::commands::{get_nervous_system_parameters, sns_canisters_summary};
+use crate::commands::{get_nervous_system_parameters, get_sns_canisters_summary};
 use crate::lib::signing::IngressWithRequestId;
 use crate::lib::AnyhowResult;
 use crate::SnsCanisterIds;
@@ -13,7 +13,7 @@ pub fn exec(
     sns_canister_ids: &SnsCanisterIds,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
     let mut msgs = vec![];
-    msgs.extend(sns_canisters_summary::exec(
+    msgs.extend(get_sns_canisters_summary::exec(
         private_key_pem,
         sns_canister_ids,
     )?);

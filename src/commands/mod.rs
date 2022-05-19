@@ -10,6 +10,7 @@ mod account_balance;
 mod configure_dissolve_delay;
 mod generate;
 mod get_nervous_system_parameters;
+mod get_sns_canisters_summary;
 mod make_proposal;
 mod make_upgrade_canister_proposal;
 mod public;
@@ -17,7 +18,6 @@ mod qrcode;
 mod register_vote;
 mod request_status;
 mod send;
-mod sns_canisters_summary;
 mod stake_neuron;
 mod summary;
 mod transfer;
@@ -62,12 +62,12 @@ pub enum Command {
     /// Signs a ManageNeuron message to submit a UpgradeSnsControlledCanister
     /// proposal.
     MakeUpgradeCanisterProposal(make_upgrade_canister_proposal::MakeUpgradeCanisterProposalOpts),
-    /// Prints a comprehensive overview of an SNS. Includes SNS canisters info and 
+    /// Prints a comprehensive overview of an SNS. Includes SNS canisters info and
     /// its NervousSystemParameters.
     Summary,
-    /// Outputs canister info about the canisters of an SNS. These include Governance, Ledger, Root, and 
+    /// Outputs canister info about the canisters of an SNS. These include Governance, Ledger, Root, and
     /// dapp canisters. Info includes cycles, ownership and more.
-    SnsCanistersSummary,
+    GetSnsCanistersSummary,
     /// Prints the NervousSystemParameters for an SNS. These include the cost of rejected
     /// proposal, the initial voting time, the reward distribution period, and others.
     GetNervousSystemParameters,
@@ -152,10 +152,10 @@ pub fn exec(
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             summary::exec(&pem, &canister_ids).and_then(|out| print_vec(qr, &out))
         }
-        Command::SnsCanistersSummary => {
+        Command::GetSnsCanistersSummary => {
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
-            sns_canisters_summary::exec(&pem, &canister_ids).and_then(|out| print_vec(qr, &out))
+            get_sns_canisters_summary::exec(&pem, &canister_ids).and_then(|out| print_vec(qr, &out))
         }
         Command::GetNervousSystemParameters => {
             let canister_ids = require_canister_ids(sns_canister_ids)?;

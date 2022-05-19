@@ -15,7 +15,8 @@ use ic_agent::{
 };
 use ic_base_types::PrincipalId;
 use ic_ic00_types::CanisterStatusResultV2;
-use ic_sns_governance::pb::v1::{ManageNeuronResponse, NervousSystemParameters};
+use ic_sns_governance::pb::v1::proposal::Action;
+use ic_sns_governance::pb::v1::{DefaultFollowees, ManageNeuronResponse, NervousSystemParameters};
 use ledger_canister::{BlockHeight, Tokens, TransferError};
 use std::str::FromStr;
 
@@ -181,24 +182,33 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
                 Vec<(String, PrincipalId, CanisterStatusResultV2)>
             )?;
             for (name, principal, canister_status) in response.into_iter() {
-                println!("\nCanister Summary:");
-                println!("name: {}", name);
-                println!("id: {}", principal);
-                // TODO(alejandro), add field controllers, NNS1-1396.
-                println!("controller: {}", canister_status.controller());
-                println!("status: {}", canister_status.status());
-                println!(
-                    "module_hash: {}",
+                // String literal, tabs are taken into account.
+                let out = format!(
+                    r###"
+
+Canister Summary:
+# name: {}
+# id: {}
+# controller: {}
+# controllers: {:?}
+# status: {}
+# module_hash: {}
+# memory_size: {}
+# cycles: {}
+# freezing_threshold: {}"###,
+                    name,
+                    principal, //id
+                    canister_status.controller(),
+                    canister_status.controllers(),
+                    canister_status.status(),
                     &canister_status
                         .module_hash()
-                        .map_or("None".to_string(), hex::encode)
-                );
-                println!("memory_size: {}", canister_status.memory_size());
-                println!("cycles: {}", canister_status.cycles());
-                println!(
-                    "freezing_threshold: {}",
+                        .map_or("None".to_string(), hex::encode),
+                    canister_status.memory_size(),
+                    canister_status.cycles(),
                     canister_status.freezing_threshold()
                 );
+                println!("{}", out);
             }
         }
         SupportedResponse::NervousSystemParameters => {
@@ -228,12 +238,11 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
                     .initial_voting_period
                     .map_or("None".to_string(), |field| field.to_string())
             );
-            // TODO(alejandro): improve the display of default followees, NNS1-1395.
             println!(
                 "default_followees: {:#?}",
                 response
                     .default_followees
-                    .map_or("None".to_string(), |field| format!("{:#?}", field))
+                    .map_or("None".to_string(), |field| print_default_followees(field))
             );
             println!(
                 "max_number_of_neurons: {}",
@@ -248,9 +257,9 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
-                "max_followees_per_action: {}",
+                "max_followees_per_function: {}",
                 response
-                    .max_followees_per_action
+                    .max_followees_per_function
                     .map_or("None".to_string(), |field| field.to_string())
             );
             println!(
@@ -299,4 +308,35 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
     }
 
     Ok(())
+}
+
+fn print_default_followees(default_followees: DefaultFollowees) -> String {
+    let mut response = String::new();
+    for (action, followees) in default_followees.followees.into_iter() {
+        let action_name: String = match action {
+            x if x == Action::Unspecified as u64 => "Unspecified".to_string(),
+            x if x == Action::Motion as u64 => "Motion".to_string(),
+            x if x == Action::ManageNervousSystemParameters as u64 => {
+                "ManageNervousSystemParameter".to_string()
+            }
+            x if x == Action::UpgradeSnsControlledCanister as u64 => {
+                "UpgradeSnsControlledCanister".to_string()
+            }
+            x if x == Action::AddGenericNervousSystemFunction as u64 => {
+                "AddGenericNervousSystemFunction".to_string()
+            }
+            x if x == Action::RemoveGenericNervousSystemFunction as u64 => {
+                "RemoveGenericNervousSystemFunction".to_string()
+            }
+            x if x == Action::ExecuteGenericNervousSystemFunction as u64 => {
+                "ExecuteGenericNervousSystemFunction".to_string()
+            }
+            _ => "Unknown".to_string(),
+        };
+        response.push_str(&format!("{}\n", &action_name));
+        for followee in followees.followees.into_iter() {
+            response.push_str(&format!("{}\n", &followee));
+        }
+    }
+    response
 }
