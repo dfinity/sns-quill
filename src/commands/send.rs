@@ -314,21 +314,21 @@ fn print_default_followees(default_followees: DefaultFollowees) -> String {
     let mut response = String::new();
     for (action, followees) in default_followees.followees.into_iter() {
         let action_name: String = match action {
-            x if x == Action::Unspecified as u64 => "Unspecified".to_string(),
-            x if x == Action::Motion as u64 => "Motion".to_string(),
-            x if x == Action::ManageNervousSystemParameters as u64 => {
+            x if x as usize == Action::Unspecified as usize => "Unspecified".to_string(),
+            x if x as usize == Action::Motion as usize => "Motion".to_string(),
+            x if x as usize == Action::ManageNervousSystemParameters as usize => {
                 "ManageNervousSystemParameter".to_string()
             }
-            x if x == Action::UpgradeSnsControlledCanister as u64 => {
+            x if x as usize == Action::UpgradeSnsControlledCanister as usize => {
                 "UpgradeSnsControlledCanister".to_string()
             }
-            x if x == Action::AddGenericNervousSystemFunction as u64 => {
+            x if x as usize == Action::AddGenericNervousSystemFunction as usize => {
                 "AddGenericNervousSystemFunction".to_string()
             }
-            x if x == Action::RemoveGenericNervousSystemFunction as u64 => {
+            x if x as usize == Action::RemoveGenericNervousSystemFunction as usize => {
                 "RemoveGenericNervousSystemFunction".to_string()
             }
-            x if x == Action::ExecuteGenericNervousSystemFunction as u64 => {
+            x if x as usize == Action::ExecuteGenericNervousSystemFunction as usize => {
                 "ExecuteGenericNervousSystemFunction".to_string()
             }
             _ => "Unknown".to_string(),
