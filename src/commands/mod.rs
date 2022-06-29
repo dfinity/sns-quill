@@ -17,6 +17,7 @@ mod register_vote;
 mod request_status;
 mod send;
 mod stake_neuron;
+mod swap;
 mod transfer;
 
 use crate::SnsCanisterIds;
@@ -56,6 +57,8 @@ pub enum Command {
     QRCode(qrcode::QRCodeOpts),
     /// Sends signed messages to the Internet computer.
     Send(send::SendOpts),
+    /// Makes a transfer to the swap canister for the initial token swap.
+    Swap(swap::SwapOpts),
     /// Signs a ManageNeuron message to submit a UpgradeSnsControlledCanister
     /// proposal.
     MakeUpgradeCanisterProposal(make_upgrade_canister_proposal::MakeUpgradeCanisterProposalOpts),
@@ -129,6 +132,11 @@ pub fn exec(
         }
         Command::QRCode(opts) => qrcode::exec(opts),
         Command::Send(opts) => runtime.block_on(async { send::exec(opts).await }),
+        Command::Swap(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            swap::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
         Command::MakeUpgradeCanisterProposal(opts) => {
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;

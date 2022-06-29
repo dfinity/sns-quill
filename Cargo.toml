@@ -20,6 +20,7 @@ ic-agent = "0.15.0"
 ic-base-types = { git = "https://github.com/dfinity/ic", rev = "93e5215ee70c6102834a9dbadf81a6a927724a3c" }
 ic-nervous-system-common ={ git = "https://github.com/dfinity/ic", rev = "93e5215ee70c6102834a9dbadf81a6a927724a3c" }
 ic-sns-governance = { git = "https://github.com/dfinity/ic", rev = "93e5215ee70c6102834a9dbadf81a6a927724a3c" }
+ic-sns-sale = { git = "https://github.com/dfinity/ic", rev = "93e5215ee70c6102834a9dbadf81a6a927724a3c" }
 ic-types = "0.3.0"
 ledger-canister = { git = "https://github.com/dfinity/ic", rev = "93e5215ee70c6102834a9dbadf81a6a927724a3c" }
 libsecp256k1 = "0.7.0"

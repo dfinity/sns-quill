@@ -1,0 +1,54 @@
+type BuyerState = record {
+  icp_disbursing : bool;
+  amount_sns_e8s : nat64;
+  amount_icp_e8s : nat64;
+  sns_disbursing : bool;
+};
+type CanisterCallError = record { code : opt int32; description : text };
+type DerivedState = record {
+  sns_tokens_per_icp : float32;
+  buyer_total_icp_e8s : nat64;
+};
+type ErrorRefundIcpRequest = record {
+  icp_e8s : nat64;
+  fee_override_e8s : nat64;
+};
+type FinalizeSaleResponse = record {
+  sns_governance_normal_mode_enabled : opt SetModeCallResult;
+  sweep_icp : opt SweepResult;
+  sweep_sns : opt SweepResult;
+  create_neuron : opt SweepResult;
+};
+type GetCanisterStatusResponse = record { canister_cycle_balance : nat64 };
+type GetStateResponse = record { sale : opt Sale; derived : opt DerivedState };
+type Init = record {
+  min_participant_icp_e8s : nat64;
+  max_icp_e8s : nat64;
+  min_participants : nat32;
+  token_sale_timestamp_seconds : nat64;
+  nns_governance_canister_id : text;
+  icp_ledger_canister_id : text;
+  sns_ledger_canister_id : text;
+  max_participant_icp_e8s : nat64;
+  sns_governance_canister_id : text;
+  min_icp_e8s : nat64;
+};
+type Possibility = variant { Err : CanisterCallError };
+type RefreshBuyerTokensRequest = record { buyer : text };
+type Sale = record { init : opt Init; state : opt State };
+type SetModeCallResult = record { possibility : opt Possibility };
+type State = record {
+  sns_token_e8s : nat64;
+  lifecycle : int32;
+  buyers : vec record { text; BuyerState };
+};
+type SweepResult = record { failure : nat32; skipped : nat32; success : nat32 };
+service : (Init) -> {
+  error_refund_icp : (ErrorRefundIcpRequest) -> (record {});
+  finalize_sale : (record {}) -> (FinalizeSaleResponse);
+  get_canister_status : (record {}) -> (GetCanisterStatusResponse);
+  get_state : (record {}) -> (GetStateResponse) query;
+  open_sale : (record {}) -> (record {});
+  refresh_buyer_tokens : (RefreshBuyerTokensRequest) -> (record {});
+  refresh_sns_tokens : (record {}) -> (record {});
+}
