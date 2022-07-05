@@ -25,7 +25,7 @@ jobs:
         env:
           VCPKG_ROOT: 'C:\vcpkg'
 
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1.0.6
         with:
           profile: minimal
   
