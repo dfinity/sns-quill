@@ -16,7 +16,7 @@ use super::transfer;
 /// If the swap was aborted or failed, or some of your contributed ICP never made it into a neuron,
 /// this command can retrieve your unused ICP, minus transaction fees.
 #[derive(Parser)]
-pub struct RefundOpts {
+pub struct RefundSwapOpts {
     /// The amount of ICP to request a refund for.
     #[clap(long)]
     amount: String,
@@ -28,7 +28,7 @@ pub struct RefundOpts {
 pub fn exec(
     pem: &str,
     sns_canister_ids: &SnsCanisterIds,
-    opts: RefundOpts,
+    opts: RefundSwapOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
     let tokens = transfer::parse_tokens(&opts.amount)?.get_e8s();
     let fee = opts
