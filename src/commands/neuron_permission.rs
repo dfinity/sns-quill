@@ -4,7 +4,7 @@ use clap::{ArgEnum, Parser};
 use ic_base_types::PrincipalId;
 use ic_sns_governance::pb::v1::{
     manage_neuron::{AddNeuronPermissions, Command, RemoveNeuronPermissions},
-    ManageNeuron, NeuronPermissionList,
+    ManageNeuron, NeuronPermissionList, NeuronPermissionType,
 };
 
 use crate::{
@@ -38,19 +38,7 @@ pub struct NeuronPermissionOpts {
         min_values(1),
         required(true)
     )]
-    permissions: Vec<PermissionType>,
-}
-
-#[derive(ArgEnum, Clone)]
-pub enum PermissionType {
-    ConfigureDissolveState = 1,
-    ManagePrincipals = 2,
-    SubmitProposal = 3,
-    Vote = 4,
-    Disburse = 5,
-    Split = 6,
-    MergeMaturity = 7,
-    DisburseMaturity = 8,
+    permissions: Vec<NeuronPermissionType>,
 }
 
 #[derive(ArgEnum, Clone)]
