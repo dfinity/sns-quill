@@ -52,6 +52,7 @@ pub struct SnsCanisterIds {
     pub governance_canister_id: CanisterId,
     pub ledger_canister_id: CanisterId,
     pub root_canister_id: CanisterId,
+    pub swap_canister_id: CanisterId,
     pub dapp_canister_id_list: Vec<CanisterId>,
 }
 
@@ -117,12 +118,14 @@ fn read_sns_canister_ids(file_path: Option<String>) -> AnyhowResult<Option<SnsCa
     let governance_canister_id = parse_canister_id("governance_canister_id", &ids)?;
     let ledger_canister_id = parse_canister_id("ledger_canister_id", &ids)?;
     let root_canister_id = parse_canister_id("root_canister_id", &ids)?;
+    let swap_canister_id = parse_canister_id("swap_canister_id", &ids)?;
 
     let dapp_canister_id_list = parse_dapp_canister_id_list("dapp_canister_id_list", &ids)?;
 
     Ok(Some(SnsCanisterIds {
         governance_canister_id,
         ledger_canister_id,
+        swap_canister_id,
         root_canister_id,
         dapp_canister_id_list,
     }))
@@ -260,6 +263,7 @@ fn test_read_canister_ids_from_file() {
         governance_canister_id: CanisterId::from_str("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap(),
         ledger_canister_id: CanisterId::from_str("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap(),
         root_canister_id: CanisterId::from_str("r7inp-6aaaa-aaaaa-aaabq-cai").unwrap(),
+        swap_canister_id: CanisterId::from_str("rkp4c-7iaaa-aaaaa-aaaca-cai").unwrap(),
         dapp_canister_id_list: vec![
             CanisterId::from_str("rdmx6-jaaaa-aaaaa-aaadq-cai").unwrap(),
             CanisterId::from_str("qoctq-giaaa-aaaaa-aaaea-cai").unwrap(),
@@ -288,6 +292,7 @@ fn test_read_canister_ids_from_file_empty_dapp_canister_id_list() {
         governance_canister_id: CanisterId::from_str("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap(),
         ledger_canister_id: CanisterId::from_str("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap(),
         root_canister_id: CanisterId::from_str("r7inp-6aaaa-aaaaa-aaabq-cai").unwrap(),
+        swap_canister_id: CanisterId::from_str("rkp4c-7iaaa-aaaaa-aaaca-cai").unwrap(),
         dapp_canister_id_list: vec![],
     };
 

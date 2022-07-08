@@ -74,7 +74,7 @@ fn new_tokens(tokens: u64, e8s: u64) -> AnyhowResult<Tokens> {
         .context("Cannot create new Tokens")
 }
 
-fn parse_tokens(amount: &str) -> AnyhowResult<Tokens> {
+pub fn parse_tokens(amount: &str) -> AnyhowResult<Tokens> {
     let parse_u64 = |s: &str| {
         s.parse::<u64>()
             .context("Failed to parse Tokens as unsigned integer")

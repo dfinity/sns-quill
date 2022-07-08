@@ -43,6 +43,8 @@ pub type AnyhowResult<T = ()> = anyhow::Result<T>;
 pub enum TargetCanister {
     Governance(Principal),
     Ledger(Principal),
+    Swap(Principal),
+    IcpLedger,
 }
 
 impl From<TargetCanister> for Principal {
@@ -50,22 +52,20 @@ impl From<TargetCanister> for Principal {
         match target_canister {
             TargetCanister::Governance(principal) => principal,
             TargetCanister::Ledger(principal) => principal,
+            TargetCanister::Swap(principal) => principal,
+            TargetCanister::IcpLedger => ic_nns_constants::LEDGER_CANISTER_ID.get().0,
         }
     }
 }
 
 /// Returns the candid interface definition (i.e. the contents of a .did file)
 /// for the target canister, if there is one.
-pub fn get_local_candid(target_canister: TargetCanister) -> AnyhowResult<String> {
+pub fn get_local_candid(target_canister: TargetCanister) -> String {
     match target_canister {
-        TargetCanister::Governance(_) => {
-            String::from_utf8(include_bytes!("../../candid/governance.did").to_vec())
-                .context("Cannot load governance.did")
-        }
-        TargetCanister::Ledger(_) => {
-            String::from_utf8(include_bytes!("../../candid/ledger.did").to_vec())
-                .context("Cannot load ledger.did")
-        }
+        TargetCanister::Governance(_) => include_str!("../../candid/governance.did").to_string(),
+        TargetCanister::Ledger(_) => include_str!("../../candid/ledger.did").to_string(),
+        TargetCanister::Swap(_) => include_str!("../../candid/swap.did").to_string(),
+        TargetCanister::IcpLedger => include_str!("../../candid/icp_ledger.did").to_string(),
     }
 }
 
@@ -76,7 +76,7 @@ pub fn get_idl_string(
     method_name: &str,
     part: &str,
 ) -> AnyhowResult<String> {
-    let spec = get_local_candid(target_canister)?;
+    let spec = get_local_candid(target_canister);
     let method_type = get_candid_type(spec, method_name);
     let result = match method_type {
         None => candid::IDLArgs::from_bytes(serialized_candid),
