@@ -9,11 +9,11 @@ use tokio::runtime::Runtime;
 mod account_balance;
 mod configure_dissolve_delay;
 mod generate;
+mod get_swap_refund;
 mod make_proposal;
 mod make_upgrade_canister_proposal;
 mod public;
 mod qrcode;
-mod refund_swap;
 mod register_vote;
 mod request_status;
 mod send;
@@ -45,7 +45,7 @@ pub enum Command {
     /// can submit proposals (such as a Motion Proposal) to be voted on by other neuron
     /// holders.
     MakeProposal(make_proposal::MakeProposalOpts),
-    RefundSwap(refund_swap::RefundSwapOpts),
+    GetSwapRefund(get_swap_refund::GetSwapRefundOpts),
     /// Signs a ManageNeuron message to register a vote for a proposal. Registering a vote will
     /// update the ballot of the given proposal and could trigger followees to vote. When
     /// enough votes are cast or enough time passes, the proposal will either be rejected or
@@ -99,10 +99,10 @@ pub fn exec(
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             make_proposal::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
-        Command::RefundSwap(opts) => {
+        Command::GetSwapRefund(opts) => {
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
-            refund_swap::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+            get_swap_refund::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
         Command::RegisterVote(opts) => {
             let pem = require_pem(private_key_pem)?;
