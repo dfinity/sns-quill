@@ -45,7 +45,6 @@ pub enum Command {
     /// can submit proposals (such as a Motion Proposal) to be voted on by other neuron
     /// holders.
     MakeProposal(make_proposal::MakeProposalOpts),
-    /// Signs a request for a refund of ICP from the swap canister.
     RefundSwap(refund_swap::RefundSwapOpts),
     /// Signs a ManageNeuron message to register a vote for a proposal. Registering a vote will
     /// update the ballot of the given proposal and could trigger followees to vote. When
