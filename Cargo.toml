@@ -17,11 +17,11 @@ clap = { version = "3.1.6", features = ["derive", "cargo"] }
 flate2 = "1.0.22"
 hex = {version = "0.4.2", features = ["serde"] }
 ic-agent = "0.15.0"
-ic-base-types = { git = "https://github.com/dfinity/ic", rev = "8ed0f58e65237ecf56982781a87c75053155ff66" }
-ic-nervous-system-common ={ git = "https://github.com/dfinity/ic", rev = "8ed0f58e65237ecf56982781a87c75053155ff66" }
-ic-sns-governance = { git = "https://github.com/dfinity/ic", rev = "8ed0f58e65237ecf56982781a87c75053155ff66" }
+ic-base-types = { git = "https://github.com/dfinity/ic", rev = "93e5215ee70c6102834a9dbadf81a6a927724a3c" }
+ic-nervous-system-common ={ git = "https://github.com/dfinity/ic", rev = "93e5215ee70c6102834a9dbadf81a6a927724a3c" }
+ic-sns-governance = { git = "https://github.com/dfinity/ic", rev = "93e5215ee70c6102834a9dbadf81a6a927724a3c" }
 ic-types = "0.3.0"
-ledger-canister = { git = "https://github.com/dfinity/ic", rev = "8ed0f58e65237ecf56982781a87c75053155ff66" }
+ledger-canister = { git = "https://github.com/dfinity/ic", rev = "93e5215ee70c6102834a9dbadf81a6a927724a3c" }
 libsecp256k1 = "0.7.0"
 num-bigint = { version = "0.4.3", features = ["serde"] }
 openssl = "0.10.32"
