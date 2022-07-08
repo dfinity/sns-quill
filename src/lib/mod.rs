@@ -53,7 +53,7 @@ impl From<TargetCanister> for Principal {
             TargetCanister::Governance(principal) => principal,
             TargetCanister::Ledger(principal) => principal,
             TargetCanister::Swap(principal) => principal,
-            TargetCanister::IcpLedger => "ryjl3-tyaaa-aaaaa-aaaba-cai".parse().unwrap(),
+            TargetCanister::IcpLedger => ic_nns_constants::LEDGER_CANISTER_ID.get().0,
         }
     }
 }

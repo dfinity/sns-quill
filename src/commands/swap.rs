@@ -1,7 +1,7 @@
 use candid::Encode;
 use clap::Parser;
 use ic_base_types::PrincipalId;
-use ic_sns_sale::pb::v1::RefreshBuyerTokensRequest;
+use ic_sns_swap::pb::v1::RefreshBuyerTokensRequest;
 use ledger_canister::{AccountIdentifier, Memo, SendArgs, Subaccount, Tokens};
 
 use crate::{
@@ -17,7 +17,7 @@ use super::transfer;
 /// Signs messages needed to participate in the initial token swap. This operation consists of two messages:
 /// First, `amount` ICP is transferred to the swap canister on the NNS ledger, under the subaccount for your principal.
 /// Second, the swap canister is notified that the transfer has been made.
-/// Once the sale has been finalized, if it was successful, you will receive your neurons automatically.
+/// Once the swap has been finalized, if it was successful, you will receive your neurons automatically.
 #[derive(Parser)]
 pub struct SwapOpts {
     /// The amount of ICP to transfer. Your neuron's share of the governance tokens at sale finalization will be proportional to your share of the contributed ICP.

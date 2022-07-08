@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        rust: [stable]
+        rust: ['1.60.0']
         task: [check, fmt, clippy, test]
     steps:
       - uses: actions/checkout@master
@@ -30,7 +30,6 @@ jobs:
         with:
           profile: minimal
           toolchain: ${{ matrix.rust }}
-          override: true
           components: rustfmt, clippy
   
       - name: ${{ matrix.task }}
