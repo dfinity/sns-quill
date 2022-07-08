@@ -125,7 +125,7 @@ pub fn sign(
     args: Vec<u8>,
     target_canister: TargetCanister,
 ) -> AnyhowResult<SignedMessageWithRequestId> {
-    let spec = get_local_candid(target_canister)?;
+    let spec = get_local_candid(target_canister);
     let method_type = get_candid_type(spec, method_name);
     let is_query = match &method_type {
         Some((_, f)) => f.is_query(),
