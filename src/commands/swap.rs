@@ -1,7 +1,7 @@
 use candid::Encode;
 use clap::Parser;
 use ic_base_types::PrincipalId;
-use ic_sns_sale::pb::v1::RefreshBuyerTokensRequest;
+use ic_sns_swap::pb::v1::RefreshBuyerTokensRequest;
 use ledger_canister::{AccountIdentifier, Memo, SendArgs, Subaccount, Tokens};
 
 use crate::{

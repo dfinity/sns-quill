@@ -18,7 +18,8 @@ flate2 = "1.0.22"
 hex = {version = "0.4.2", features = ["serde"] }
 ic-agent = "0.15.0"
 ic-base-types = { git = "https://github.com/dfinity/ic", rev = "ef47af542ec54b8e7c28559e8f922585eea53873" }
-ic-nervous-system-common ={ git = "https://github.com/dfinity/ic", rev = "ef47af542ec54b8e7c28559e8f922585eea53873" }
+ic-nervous-system-common = { git = "https://github.com/dfinity/ic", rev = "ef47af542ec54b8e7c28559e8f922585eea53873" }
+ic-nns-constants = { git = "https://github.com/dfinity/ic", rev = "ef47af542ec54b8e7c28559e8f922585eea53873" }
 ic-sns-governance = { git = "https://github.com/dfinity/ic", rev = "ef47af542ec54b8e7c28559e8f922585eea53873" }
 ic-sns-swap = { git = "https://github.com/dfinity/ic", rev = "ef47af542ec54b8e7c28559e8f922585eea53873" }
 ic-types = "0.3.0"
