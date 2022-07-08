@@ -1,6 +1,6 @@
 use candid::Encode;
 use clap::Parser;
-use ic_sns_sale::pb::v1::ErrorRefundIcpRequest;
+use ic_sns_swap::pb::v1::ErrorRefundIcpRequest;
 
 use crate::{
     lib::{
