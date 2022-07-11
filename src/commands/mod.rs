@@ -11,6 +11,7 @@ mod configure_dissolve_delay;
 mod generate;
 mod make_proposal;
 mod make_upgrade_canister_proposal;
+mod neuron_permission;
 mod public;
 mod qrcode;
 mod register_vote;
@@ -61,6 +62,8 @@ pub enum Command {
     /// Signs a ManageNeuron message to submit a UpgradeSnsControlledCanister
     /// proposal.
     MakeUpgradeCanisterProposal(make_upgrade_canister_proposal::MakeUpgradeCanisterProposalOpts),
+    /// Signs a ManageNeuron message to add or remove neuron permissions to/from a specified principal.
+    NeuronPermission(neuron_permission::NeuronPermissionOpts),
 }
 
 pub fn exec(
@@ -101,6 +104,11 @@ pub fn exec(
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             register_vote::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
+        Command::NeuronPermission(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            neuron_permission::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
         Command::Generate(opts) => generate::exec(opts),
         // QR code for URL: https://p5deo-6aaaa-aaaab-aaaxq-cai.raw.ic0.app/
