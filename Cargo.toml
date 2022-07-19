@@ -21,6 +21,7 @@ ic-base-types = { git = "https://github.com/dfinity/ic", rev = "aefcc5ab547578ec
 ic-nervous-system-common = { git = "https://github.com/dfinity/ic", rev = "aefcc5ab547578ec81853262757c6224a0d6cf9f" }
 ic-nns-constants = { git = "https://github.com/dfinity/ic", rev = "aefcc5ab547578ec81853262757c6224a0d6cf9f" }
 ic-sns-governance = { git = "https://github.com/dfinity/ic", rev = "aefcc5ab547578ec81853262757c6224a0d6cf9f" }
+ic-sns-root = { git = "https://github.com/dfinity/ic", rev = "aefcc5ab547578ec81853262757c6224a0d6cf9f" }
 ic-sns-swap = { git = "https://github.com/dfinity/ic", rev = "aefcc5ab547578ec81853262757c6224a0d6cf9f" }
 ic-types = "0.3.0"
 ledger-canister = { git = "https://github.com/dfinity/ic", rev = "aefcc5ab547578ec81853262757c6224a0d6cf9f" }

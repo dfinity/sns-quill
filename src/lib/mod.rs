@@ -44,6 +44,7 @@ pub enum TargetCanister {
     Governance(Principal),
     Ledger(Principal),
     Swap(Principal),
+    Root(Principal),
     IcpLedger,
 }
 
@@ -53,6 +54,7 @@ impl From<TargetCanister> for Principal {
             TargetCanister::Governance(principal) => principal,
             TargetCanister::Ledger(principal) => principal,
             TargetCanister::Swap(principal) => principal,
+            TargetCanister::Root(principal) => principal,
             TargetCanister::IcpLedger => ic_nns_constants::LEDGER_CANISTER_ID.get().0,
         }
     }
@@ -65,6 +67,7 @@ pub fn get_local_candid(target_canister: TargetCanister) -> String {
         TargetCanister::Governance(_) => include_str!("../../candid/governance.did").to_string(),
         TargetCanister::Ledger(_) => include_str!("../../candid/ledger.did").to_string(),
         TargetCanister::Swap(_) => include_str!("../../candid/swap.did").to_string(),
+        TargetCanister::Root(_) => include_str!("../../candid/root.did").to_string(),
         TargetCanister::IcpLedger => include_str!("../../candid/icp_ledger.did").to_string(),
     }
 }

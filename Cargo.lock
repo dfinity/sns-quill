@@ -2238,6 +2238,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "ic-sns-root"
+version = "0.8.0"
+source = "git+https://github.com/dfinity/ic?rev=aefcc5ab547578ec81853262757c6224a0d6cf9f#aefcc5ab547578ec81853262757c6224a0d6cf9f"
+dependencies = [
+ "async-trait",
+ "build-info",
+ "build-info-build",
+ "candid",
+ "dfn_candid",
+ "dfn_core",
+ "ic-base-types",
+ "ic-ic00-types",
+ "ic-nervous-system-common",
+ "ic-nervous-system-common-build-metadata",
+ "ic-nervous-system-root",
+ "prost 0.10.4",
+ "serde",
+]
+
+[[package]]
 name = "ic-sns-swap"
 version = "0.1.0"
 source = "git+https://github.com/dfinity/ic?rev=aefcc5ab547578ec81853262757c6224a0d6cf9f#aefcc5ab547578ec81853262757c6224a0d6cf9f"
@@ -4002,6 +4022,7 @@ dependencies = [
  "ic-nervous-system-common",
  "ic-nns-constants",
  "ic-sns-governance",
+ "ic-sns-root",
  "ic-sns-swap",
  "ic-types 0.3.0",
  "ledger-canister",
