@@ -1,9 +1,6 @@
-use crate::lib::{get_candid_type, get_idl_string, get_local_candid, AnyhowResult, TargetCanister};
+use crate::lib::{get_idl_string, AnyhowResult, TargetCanister};
 use anyhow::{anyhow, Context};
-use ic_agent::{
-    agent::{QueryBuilder, UpdateBuilder},
-    RequestId,
-};
+use ic_agent::{agent::UpdateBuilder, RequestId};
 use ic_types::principal::Principal;
 use serde::{Deserialize, Serialize};
 use serde_cbor::Value;
@@ -125,48 +122,23 @@ pub fn sign(
     args: Vec<u8>,
     target_canister: TargetCanister,
 ) -> AnyhowResult<SignedMessageWithRequestId> {
-    let spec = get_local_candid(target_canister);
-    let method_type = get_candid_type(spec, method_name);
-    let is_query = match &method_type {
-        Some((_, f)) => f.is_query(),
-        _ => false,
-    };
-
     let ingress_expiry = Duration::from_secs(5 * 60);
     let canister_id = Principal::from(target_canister);
-
-    let (content, request_id) = if is_query {
-        let bytes = QueryBuilder::new(&get_agent(pem)?, canister_id, method_name.to_string())
-            .with_arg(args)
-            .expire_after(ingress_expiry)
-            .sign()?
-            .signed_query;
-        (hex::encode(bytes), None)
-    } else {
-        let signed_update =
-            UpdateBuilder::new(&get_agent(pem)?, canister_id, method_name.to_string())
-                .with_arg(args)
-                .expire_after(ingress_expiry)
-                .sign()?;
-
-        (
-            hex::encode(signed_update.signed_update),
-            Some(signed_update.request_id),
-        )
-    };
+    let signed_update = UpdateBuilder::new(&get_agent(pem)?, canister_id, method_name.to_string())
+        .with_arg(args)
+        .expire_after(ingress_expiry)
+        .sign()?;
+    let content = hex::encode(signed_update.signed_update);
+    let request_id = signed_update.request_id;
 
     Ok(SignedMessageWithRequestId {
         message: Ingress {
-            call_type: if is_query {
-                CallType::Query
-            } else {
-                CallType::Update
-            },
-            request_id: request_id.map(|v| v.into()),
+            call_type: CallType::Update,
+            request_id: Some(request_id.into()),
             content,
             target_canister,
         },
-        request_id,
+        request_id: Some(request_id),
     })
 }
 
