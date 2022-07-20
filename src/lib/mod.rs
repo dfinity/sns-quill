@@ -45,6 +45,7 @@ pub enum TargetCanister {
     Ledger(Principal),
     Swap(Principal),
     IcpLedger,
+    SnsW,
 }
 
 impl From<TargetCanister> for Principal {
@@ -54,6 +55,7 @@ impl From<TargetCanister> for Principal {
             TargetCanister::Ledger(principal) => principal,
             TargetCanister::Swap(principal) => principal,
             TargetCanister::IcpLedger => ic_nns_constants::LEDGER_CANISTER_ID.get().0,
+            TargetCanister::SnsW => ic_nns_constants::SNS_WASM_CANISTER_ID.get().0,
         }
     }
 }
@@ -66,6 +68,7 @@ pub fn get_local_candid(target_canister: TargetCanister) -> String {
         TargetCanister::Ledger(_) => include_str!("../../candid/ledger.did").to_string(),
         TargetCanister::Swap(_) => include_str!("../../candid/swap.did").to_string(),
         TargetCanister::IcpLedger => include_str!("../../candid/icp_ledger.did").to_string(),
+        TargetCanister::SnsW => include_str!("../../candid/snsw.did").to_string(),
     }
 }
 
