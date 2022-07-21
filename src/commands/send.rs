@@ -56,10 +56,14 @@ pub async fn send_unsigned_ingress(
     dry_run: bool,
     target_canister: TargetCanister,
 ) -> AnyhowResult {
-    let msg = crate::lib::signing::sign("", method_name, args, target_canister)?;
-    let ingress = msg.message;
-    send(
-        &ingress,
+    let msg = crate::lib::signing::sign_ingress_with_request_status_query(
+        "",
+        method_name,
+        args,
+        target_canister,
+    )?;
+    send_ingress_and_check_status(
+        &msg,
         &SendOpts {
             file_name: Default::default(), // Not used.
             yes: false,
