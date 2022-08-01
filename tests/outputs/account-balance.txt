@@ -3,9 +3,10 @@ Sending message with
   Call type:   update
   Sender:      2vxsx-fae
   Canister id: ryjl3-tyaaa-aaaaa-aaaba-cai
-  Method name: account_balance
+  Method name: icrc1_balance_of
   Arguments:   (
   record {
-    account = blob "\ec\0e$V\fb\9f\f6\c8\0f\1dG[0\1d\9b*\b8sa/\96\e7\fdt\e7\c0\c0\b2\d5\8ef\93";
+    of = principal "fdsgv-62ihb-nbiqv-xgic5-iefsv-3cscz-tmbzv-63qd5-vh43v-dqfrt-pae";
+    subaccount = null;
   },
 )

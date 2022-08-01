@@ -7,14 +7,15 @@ use crate::{
     },
 };
 use anyhow::{anyhow, Context};
-use candid::Decode;
+use candid::{Decode, Nat};
 use clap::Parser;
 use ic_agent::{
     agent::{http_transport::ReqwestHttpReplicaV2Transport, ReplicaV2Transport},
     RequestId,
 };
+use ic_icrc1::endpoints::TransferError;
+use ic_ledger_core::Tokens;
 use ic_sns_governance::pb::v1::ManageNeuronResponse;
-use ledger_canister::{BlockHeight, Tokens, TransferError};
 use std::str::FromStr;
 
 /// Sends a signed message or a set of messages.
@@ -146,8 +147,8 @@ impl FromStr for SupportedResponse {
 
     fn from_str(input: &str) -> Result<SupportedResponse, Self::Err> {
         match input {
-            "account_balance" => Ok(SupportedResponse::AccountBalance),
-            "transfer" => Ok(SupportedResponse::Transfer),
+            "icrc_balance_of" => Ok(SupportedResponse::AccountBalance),
+            "icrc_transfer" => Ok(SupportedResponse::Transfer),
             "manage_neuron" => Ok(SupportedResponse::ManageNeuron),
             unsupported_response => Err(anyhow!(
                 "{} is not a supported response",
@@ -166,7 +167,7 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
             println!("Response: {:?\n}", response);
         }
         SupportedResponse::Transfer => {
-            let response = Decode!(blob.as_slice(), Result<BlockHeight, TransferError>)?;
+            let response = Decode!(blob.as_slice(), Result<Nat, TransferError>)?;
             println!("Response: {:?\n}", response);
         }
         SupportedResponse::ManageNeuron => {

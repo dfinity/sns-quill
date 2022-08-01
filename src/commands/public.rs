@@ -15,7 +15,7 @@ pub struct PublicOpts {
 pub fn exec(pem: &Option<String>, opts: PublicOpts) -> AnyhowResult {
     let (principal_id, account_id) = get_public_ids(pem, opts)?;
     println!("Principal id: {}", principal_id.to_text());
-    println!("Account id: {}", account_id);
+    println!("NNS account id: {}", account_id);
     Ok(())
 }
 

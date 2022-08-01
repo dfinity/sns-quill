@@ -68,6 +68,6 @@ pub fn exec(opts: GenerateOpts) -> AnyhowResult {
     }
     let (principal_id, account_id) = crate::commands::public::get_ids(&Some(pem))?;
     println!("Principal id: {}", principal_id);
-    println!("Account id: {}", account_id);
+    println!("NNS account id: {}", account_id);
     Ok(())
 }
