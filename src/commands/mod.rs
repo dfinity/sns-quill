@@ -20,6 +20,7 @@ mod register_vote;
 mod request_status;
 mod send;
 mod stake_neuron;
+mod status;
 mod swap;
 mod transfer;
 
@@ -62,6 +63,7 @@ pub enum Command {
     QRCode(qrcode::QRCodeOpts),
     /// Sends signed messages to the Internet computer.
     Send(send::SendOpts),
+    Status(status::StatusOpts),
     Swap(swap::SwapOpts),
     /// Signs a ManageNeuron message to submit a UpgradeSnsControlledCanister
     /// proposal.
@@ -152,6 +154,10 @@ pub fn exec(
         }
         Command::QRCode(opts) => qrcode::exec(opts),
         Command::Send(opts) => runtime.block_on(async { send::exec(opts).await }),
+        Command::Status(opts) => {
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            runtime.block_on(async { status::exec(&canister_ids, opts).await })
+        }
         Command::Swap(opts) => {
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
