@@ -3,15 +3,16 @@ Sending message with
   Call type:   update
   Sender:      fdsgv-62ihb-nbiqv-xgic5-iefsv-3cscz-tmbzv-63qd5-vh43v-dqfrt-pae
   Canister id: ryjl3-tyaaa-aaaaa-aaaba-cai
-  Method name: transfer
+  Method name: icrc1_transfer
   Arguments:   (
   record {
-    to = blob "\a0\ea\90\02\c2\bc=D P\f4C\1f72\c9\1d\be\c1>\ffy\f4\14\b1RU\d6\0cJ2L";
-    fee = record { e8s = 10_000 : nat64 };
-    memo = 777 : nat64;
+    fee = null;
+    to_principal = principal "rrkah-fqaaa-aaaaa-aaaaq-cai";
+    to_subaccount = opt blob "r\8a\c1;\10I\a3\ac\af\fe\13\f1;\c7\1e\fd\9b4\97e\80\d4\0d\f2y\b2s n\f14$";
+    memo = opt (777 : nat64);
     from_subaccount = null;
     created_at_time = null;
-    amount = record { e8s = 1_200_000_000 : nat64 };
+    amount = 1_200_000_000 : nat;
   },
 )
 Sending message with
