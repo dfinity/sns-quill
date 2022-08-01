@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{
     lib::{
         signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
@@ -5,17 +7,23 @@ use crate::{
     },
     SnsCanisterIds,
 };
-use anyhow::{anyhow, bail, Context, Error};
+use anyhow::{anyhow, bail, ensure, Context};
 use candid::Encode;
 use clap::Parser;
 use ic_base_types::PrincipalId;
-use ledger_canister::{AccountIdentifier, Memo, Tokens, TransferArgs, DEFAULT_TRANSFER_FEE};
+use ic_icrc1::{endpoints::TransferArg, Subaccount};
+use ic_ledger_core::Tokens;
+// use ledger_canister::{AccountIdentifier, Memo, Tokens, TransferArgs, DEFAULT_TRANSFER_FEE};
 
 /// Signs a ledger transfer update call.
 #[derive(Default, Parser)]
 pub struct TransferOpts {
-    /// The AccountIdentifier of the destination account. For example: d5662fbce449fbd4adb4b9aff6c59035bd93e7c2eff5010a446ebc3dd81007f8
-    pub to: String,
+    /// The principal of the destination account.
+    pub to_principal: PrincipalId,
+
+    /// The subaccount of the destination account. For example: e000d80101
+    #[clap(long)]
+    pub to_subaccount: Option<HexSubaccount>,
 
     /// Amount of governance tokens to transfer (with up to 8 decimal digits after decimal point)
     #[clap(long, validator(tokens_amount_validator))]
@@ -36,32 +44,44 @@ pub fn exec(
     sns_canister_ids: &SnsCanisterIds,
     opts: TransferOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
-    let amount = parse_tokens(&opts.amount).context("Cannot parse amount")?;
-    let fee = opts.fee.map_or(Ok(DEFAULT_TRANSFER_FEE), |fee| {
-        parse_tokens(&fee).context("Cannot parse fee")
-    })?;
-    let memo = Memo(
-        opts.memo
-            .unwrap_or_else(|| "0".to_string())
-            .parse::<u64>()
-            .context("Failed to parse memo as unsigned integer")?,
-    );
+    let amount = parse_tokens(&opts.amount)
+        .context("Cannot parse amount")?
+        .get_e8s()
+        .into();
+    let fee = opts
+        .fee
+        .map(|fee| {
+            anyhow::Ok(
+                parse_tokens(&fee)
+                    .context("Cannot parse fee")?
+                    .get_e8s()
+                    .into(),
+            )
+        })
+        .transpose()?;
+    let memo = opts
+        .memo
+        .map(|memo| {
+            memo.parse::<u64>()
+                .context("Failed to parse memo as unsigned integer")
+        })
+        .transpose()?;
     let ledger_canister_id = PrincipalId::from(sns_canister_ids.ledger_canister_id).0;
-    let to_account_identifier = AccountIdentifier::from_hex(&opts.to).map_err(Error::msg)?;
-
-    let args = Encode!(&TransferArgs {
+    let to_subaccount = opts.to_subaccount.map(|sub| sub.0);
+    let args = TransferArg {
         memo,
         amount,
         fee,
         from_subaccount: None,
-        to: to_account_identifier.to_address(),
+        to_principal: opts.to_principal,
+        to_subaccount,
         created_at_time: None,
-    })?;
+    };
 
     let msg = sign_ingress_with_request_status_query(
         private_key_pem,
-        "transfer",
-        args,
+        "icrc1_transfer",
+        Encode!(&args)?,
         TargetCanister::Ledger(ledger_canister_id),
     )?;
 
@@ -103,4 +123,21 @@ fn memo_validator(memo: &str) -> Result<(), String> {
         return Ok(());
     }
     Err("Memo must be an unsigned integer".to_string())
+}
+
+#[derive(Debug)]
+pub struct HexSubaccount(pub Subaccount);
+
+impl FromStr for HexSubaccount {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parsed = hex::decode(&s)?;
+        ensure!(
+            parsed.len() <= 32,
+            "Subaccounts must be less than 32 bytes (64 characters)"
+        );
+        let mut sub = [0; 32];
+        sub[32 - parsed.len()..].copy_from_slice(&parsed);
+        Ok(Self(sub))
+    }
 }

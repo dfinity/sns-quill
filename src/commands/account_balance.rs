@@ -1,17 +1,21 @@
 use crate::{
-    commands::send::send_unsigned_ingress, lib::TargetCanister, AnyhowResult, SnsCanisterIds,
+    commands::send::send_unsigned_ingress, commands::transfer::HexSubaccount, lib::TargetCanister,
+    AnyhowResult, SnsCanisterIds,
 };
-use anyhow::Error;
 use candid::Encode;
 use clap::Parser;
 use ic_base_types::PrincipalId;
-use ledger_canister::{AccountIdentifier, BinaryAccountBalanceArgs};
+use ic_icrc1::Account;
 
 /// Signs a ledger account-balance query call.
 #[derive(Parser)]
 pub struct AccountBalanceOpts {
-    /// The AccountIdentifier of the account to query. For example: d5662fbce449fbd4adb4b9aff6c59035bd93e7c2eff5010a446ebc3dd81007f8
-    account_id: String,
+    /// The principal of the account to query.
+    principal: PrincipalId,
+
+    /// The subaccount of the account to query. For example: e000d80101
+    #[clap(long)]
+    subaccount: Option<HexSubaccount>,
 
     /// Will display the query, but not send it
     #[clap(long)]
@@ -19,16 +23,16 @@ pub struct AccountBalanceOpts {
 }
 
 pub async fn exec(sns_canister_ids: &SnsCanisterIds, opts: AccountBalanceOpts) -> AnyhowResult {
-    let account_identifier = AccountIdentifier::from_hex(&opts.account_id).map_err(Error::msg)?;
     let ledger_canister_id = PrincipalId::from(sns_canister_ids.ledger_canister_id).0;
 
-    let args = Encode!(&BinaryAccountBalanceArgs {
-        account: account_identifier.to_address()
-    })?;
+    let args = Account {
+        of: opts.principal,
+        subaccount: opts.subaccount.map(|sub| sub.0),
+    };
 
     send_unsigned_ingress(
-        "account_balance",
-        args,
+        "icrc1_balance_of",
+        Encode!(&args)?,
         opts.dry_run,
         TargetCanister::Ledger(ledger_canister_id),
     )
