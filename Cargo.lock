@@ -2238,6 +2238,51 @@ dependencies = [
 ]
 
 [[package]]
+name = "ic-sns-init"
+version = "0.1.0"
+source = "git+https://github.com/dfinity/ic?rev=aefcc5ab547578ec81853262757c6224a0d6cf9f#aefcc5ab547578ec81853262757c6224a0d6cf9f"
+dependencies = [
+ "anyhow",
+ "candid",
+ "dfn_candid",
+ "dfn_core",
+ "ic-base-types",
+ "ic-crypto-sha",
+ "ic-nervous-system-common",
+ "ic-nns-constants",
+ "ic-sns-governance",
+ "ic-sns-root",
+ "ic-sns-swap",
+ "ledger-canister",
+ "maplit",
+ "num",
+ "prost 0.10.4",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+]
+
+[[package]]
+name = "ic-sns-root"
+version = "0.8.0"
+source = "git+https://github.com/dfinity/ic?rev=aefcc5ab547578ec81853262757c6224a0d6cf9f#aefcc5ab547578ec81853262757c6224a0d6cf9f"
+dependencies = [
+ "async-trait",
+ "build-info",
+ "build-info-build",
+ "candid",
+ "dfn_candid",
+ "dfn_core",
+ "ic-base-types",
+ "ic-ic00-types",
+ "ic-nervous-system-common",
+ "ic-nervous-system-common-build-metadata",
+ "ic-nervous-system-root",
+ "prost 0.10.4",
+ "serde",
+]
+
+[[package]]
 name = "ic-sns-swap"
 version = "0.1.0"
 source = "git+https://github.com/dfinity/ic?rev=aefcc5ab547578ec81853262757c6224a0d6cf9f#aefcc5ab547578ec81853262757c6224a0d6cf9f"
@@ -2272,6 +2317,28 @@ dependencies = [
  "serde",
  "strum 0.18.0",
  "strum_macros 0.18.0",
+]
+
+[[package]]
+name = "ic-sns-wasm"
+version = "0.1.0"
+source = "git+https://github.com/dfinity/ic?rev=aefcc5ab547578ec81853262757c6224a0d6cf9f#aefcc5ab547578ec81853262757c6224a0d6cf9f"
+dependencies = [
+ "async-trait",
+ "build-info",
+ "candid",
+ "dfn_candid",
+ "dfn_core",
+ "futures",
+ "ic-base-types",
+ "ic-crypto-sha",
+ "ic-ic00-types",
+ "ic-sns-init",
+ "ic-sns-root",
+ "ic-types 0.8.0",
+ "maplit",
+ "prost 0.10.4",
+ "serde",
 ]
 
 [[package]]
@@ -2674,6 +2741,12 @@ checksum = "3db8d6ba2cec9eacc40e6e8ccc98931840301f1006e95647ceb2dd5c3aa06f7c"
 dependencies = [
  "libsecp256k1-core 0.3.0",
 ]
+
+[[package]]
+name = "linked-hash-map"
+version = "0.5.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
 
 [[package]]
 name = "lock_api"
@@ -3897,6 +3970,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_yaml"
+version = "0.8.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "578a7433b776b56a35785ed5ce9a7e777ac0598aac5a6dd1b4b18a307c7fc71b"
+dependencies = [
+ "indexmap",
+ "ryu",
+ "serde",
+ "yaml-rust",
+]
+
+[[package]]
 name = "sha2"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4003,6 +4088,7 @@ dependencies = [
  "ic-nns-constants",
  "ic-sns-governance",
  "ic-sns-swap",
+ "ic-sns-wasm",
  "ic-types 0.3.0",
  "ledger-canister",
  "libsecp256k1 0.7.0",
@@ -4710,6 +4796,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388c44dc09d76f1536602ead6d325eb532f5c122f17782bd57fb47baeeb767e2"
 dependencies = [
  "lzma-sys",
+]
+
+[[package]]
+name = "yaml-rust"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56c1936c4cc7a1c9ab21a1ebb602eb942ba868cbd44a99cb7cdc5892335e1c85"
+dependencies = [
+ "linked-hash-map",
 ]
 
 [[package]]
