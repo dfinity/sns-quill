@@ -23,6 +23,7 @@ ic-nns-constants = { git = "https://github.com/dfinity/ic", rev = "f7b1fb3ff7ee5
 ic-sns-governance = { git = "https://github.com/dfinity/ic", rev = "f7b1fb3ff7ee5bd0bf88a64be2eb4041d0b8c8d9" }
 ic-sns-root = { git = "https://github.com/dfinity/ic", rev = "f7b1fb3ff7ee5bd0bf88a64be2eb4041d0b8c8d9" }
 ic-sns-swap = { git = "https://github.com/dfinity/ic", rev = "f7b1fb3ff7ee5bd0bf88a64be2eb4041d0b8c8d9" }
+ic-sns-wasm = { git = "https://github.com/dfinity/ic", rev = "f7b1fb3ff7ee5bd0bf88a64be2eb4041d0b8c8d9" }
 ic-types = "0.4.1"
 ledger-canister = { git = "https://github.com/dfinity/ic", rev = "f7b1fb3ff7ee5bd0bf88a64be2eb4041d0b8c8d9" }
 libsecp256k1 = "0.7.0"
