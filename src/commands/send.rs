@@ -147,8 +147,8 @@ impl FromStr for SupportedResponse {
 
     fn from_str(input: &str) -> Result<SupportedResponse, Self::Err> {
         match input {
-            "icrc_balance_of" => Ok(SupportedResponse::AccountBalance),
-            "icrc_transfer" => Ok(SupportedResponse::Transfer),
+            "icrc1_balance_of" => Ok(SupportedResponse::AccountBalance),
+            "icrc1_transfer" => Ok(SupportedResponse::Transfer),
             "manage_neuron" => Ok(SupportedResponse::ManageNeuron),
             unsupported_response => Err(anyhow!(
                 "{} is not a supported response",
