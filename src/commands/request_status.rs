@@ -9,7 +9,7 @@ use ic_agent::{
 use ic_types::Principal;
 use std::{future::Future, pin::Pin, str::FromStr, sync::Arc};
 
-pub async fn submit(req: &RequestStatus) -> AnyhowResult<Vec<u8>> {
+pub async fn submit(req: RequestStatus) -> AnyhowResult<Vec<u8>> {
     let canister_id =
         Principal::from_text(&req.canister_id).context("Cannot parse the canister id")?;
     let request_id = RequestId::from_str(&req.request_id).context("Cannot parse the request_id")?;
@@ -90,9 +90,9 @@ impl ReplicaV2Transport for ProxySignReplicaV2Transport {
         _content: Vec<u8>,
     ) -> Pin<Box<dyn Future<Output = Result<Vec<u8>, AgentError>> + Send + 'a>> {
         async fn run(transport: &ProxySignReplicaV2Transport) -> Result<Vec<u8>, AgentError> {
-            let canister_id = Principal::from_text(transport.req.canister_id.clone())
+            let canister_id = Principal::from_text(&transport.req.canister_id)
                 .map_err(|err| MessageError(format!("Unable to parse canister_id: {:?}", err)))?;
-            let envelope = hex::decode(transport.req.content.clone()).map_err(|err| {
+            let envelope = hex::decode(&transport.req.content).map_err(|err| {
                 MessageError(format!(
                     "Unable to decode request content (should be hexadecimal encoded): {}",
                     err

@@ -1,6 +1,6 @@
 //! This module implements the command-line API.
 
-use crate::lib::{qr, require_canister_ids, require_pem, AnyhowResult};
+use crate::lib::{qr, AnyhowResult};
 use anyhow::Context;
 use clap::Parser;
 use std::io::{self, Write};
@@ -23,8 +23,6 @@ mod stake_neuron;
 mod status;
 mod swap;
 mod transfer;
-
-use crate::SnsCanisterIds;
 
 #[derive(Parser)]
 pub enum Command {
@@ -72,59 +70,20 @@ pub enum Command {
     NeuronPermission(neuron_permission::NeuronPermissionOpts),
 }
 
-pub fn exec(
-    private_key_pem: &Option<String>,
-    sns_canister_ids: &Option<SnsCanisterIds>,
-    qr: bool,
-    cmd: Command,
-) -> AnyhowResult {
+pub fn dispatch(cmd: Command) -> AnyhowResult {
     let runtime = Runtime::new().expect("Unable to create a runtime");
     match cmd {
-        Command::PublicIds(opts) => public::exec(private_key_pem, opts),
-        Command::AccountBalance(opts) => {
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            runtime.block_on(async { account_balance::exec(&canister_ids, opts).await })
-        }
-        Command::Transfer(opts) => {
-            let pem = require_pem(private_key_pem)?;
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            transfer::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
-        }
-        Command::StakeNeuron(opts) => {
-            let pem = require_pem(private_key_pem)?;
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            stake_neuron::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
-        }
-        Command::ConfigureDissolveDelay(opts) => {
-            let pem = require_pem(private_key_pem)?;
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            configure_dissolve_delay::exec(&pem, &canister_ids, opts)
-                .and_then(|out| print_vec(qr, &out))
-        }
-        Command::MakeProposal(opts) => {
-            let pem = require_pem(private_key_pem)?;
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            make_proposal::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
-        }
-        Command::GetSwapRefund(opts) => {
-            let pem = require_pem(private_key_pem)?;
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            get_swap_refund::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
-        }
-        Command::ListDeployedSnses(opts) => {
-            runtime.block_on(async { list_deployed_snses::exec(opts).await })
-        }
-        Command::RegisterVote(opts) => {
-            let pem = require_pem(private_key_pem)?;
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            register_vote::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
-        }
-        Command::NeuronPermission(opts) => {
-            let pem = require_pem(private_key_pem)?;
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            neuron_permission::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
-        }
-        Command::Generate(opts) => generate::exec(opts),
+        Command::PublicIds(opts) => public::exec(opts)?,
+        Command::AccountBalance(opts) => runtime.block_on(account_balance::exec(opts))?,
+        Command::Transfer(opts) => transfer::exec(opts)?,
+        Command::StakeNeuron(opts) => stake_neuron::exec(opts)?,
+        Command::ConfigureDissolveDelay(opts) => configure_dissolve_delay::exec(opts)?,
+        Command::MakeProposal(opts) => make_proposal::exec(opts)?,
+        Command::GetSwapRefund(opts) => get_swap_refund::exec(opts)?,
+        Command::ListDeployedSnses(opts) => runtime.block_on(list_deployed_snses::exec(opts))?,
+        Command::RegisterVote(opts) => register_vote::exec(opts)?,
+        Command::NeuronPermission(opts) => neuron_permission::exec(opts)?,
+        Command::Generate(opts) => generate::exec(opts)?,
         // QR code for URL: https://p5deo-6aaaa-aaaab-aaaxq-cai.raw.ic0.app/
         // Source code: https://github.com/ninegua/ic-qr-scanner
         Command::ScannerQRCode => {
@@ -150,26 +109,14 @@ pub fn exec(
 █████████████████████████████████████
 █████████████████████████████████████"
             );
-            Ok(())
         }
-        Command::QRCode(opts) => qrcode::exec(opts),
-        Command::Send(opts) => runtime.block_on(async { send::exec(opts).await }),
-        Command::Status(opts) => {
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            runtime.block_on(async { status::exec(&canister_ids, opts).await })
-        }
-        Command::Swap(opts) => {
-            let pem = require_pem(private_key_pem)?;
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            swap::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
-        }
-        Command::MakeUpgradeCanisterProposal(opts) => {
-            let pem = require_pem(private_key_pem)?;
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            make_upgrade_canister_proposal::exec(&pem, &canister_ids, opts)
-                .and_then(|out| print_vec(qr, &out))
-        }
+        Command::QRCode(opts) => qrcode::exec(opts)?,
+        Command::Send(opts) => runtime.block_on(send::exec(opts))?,
+        Command::Status(opts) => runtime.block_on(status::exec(opts))?,
+        Command::Swap(opts) => swap::exec(opts)?,
+        Command::MakeUpgradeCanisterProposal(opts) => make_upgrade_canister_proposal::exec(opts)?,
     }
+    Ok(())
 }
 
 // Using println! for printing to STDOUT and piping it to other tools leads to

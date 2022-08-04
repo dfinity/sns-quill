@@ -1,1 +1,1 @@
-${CARGO_TARGET_DIR:-../target}/debug/sns-quill --canister-ids-file ./canister_ids.json --pem-file - stake-neuron --amount 12 --memo 777 | ${CARGO_TARGET_DIR:-../target}/debug/sns-quill send --dry-run -
+${CARGO_TARGET_DIR:-../target}/debug/sns-quill stake-neuron --amount 12 --memo 777 --canister-ids-file ./canister_ids.json --pem-file - | ${CARGO_TARGET_DIR:-../target}/debug/sns-quill send --dry-run -

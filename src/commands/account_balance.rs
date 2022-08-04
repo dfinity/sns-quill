@@ -1,6 +1,4 @@
-use crate::{
-    commands::send::send_unsigned_ingress, lib::TargetCanister, AnyhowResult, SnsCanisterIds,
-};
+use crate::{commands::send::send_unsigned_ingress, lib::TargetCanister, AnyhowResult, IdsOpt};
 use anyhow::Error;
 use candid::Encode;
 use clap::Parser;
@@ -16,11 +14,15 @@ pub struct AccountBalanceOpts {
     /// Will display the query, but not send it
     #[clap(long)]
     dry_run: bool,
+
+    #[clap(flatten)]
+    sns_canister_ids: IdsOpt,
 }
 
-pub async fn exec(sns_canister_ids: &SnsCanisterIds, opts: AccountBalanceOpts) -> AnyhowResult {
+pub async fn exec(opts: AccountBalanceOpts) -> AnyhowResult {
     let account_identifier = AccountIdentifier::from_hex(&opts.account_id).map_err(Error::msg)?;
-    let ledger_canister_id = PrincipalId::from(sns_canister_ids.ledger_canister_id).0;
+    let ledger_canister_id =
+        PrincipalId::from(opts.sns_canister_ids.to_ids()?.ledger_canister_id).0;
 
     let args = Encode!(&BinaryAccountBalanceArgs {
         account: account_identifier.to_address()

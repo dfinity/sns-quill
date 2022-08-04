@@ -5,14 +5,11 @@ use ic_sns_swap::pb::v1::RefreshBuyerTokensRequest;
 use ledger_canister::{AccountIdentifier, Memo, SendArgs, Subaccount, Tokens};
 
 use crate::{
-    lib::{
-        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
-        AnyhowResult, TargetCanister,
-    },
-    SnsCanisterIds,
+    lib::{signing::sign_ingress_with_request_status_query, AnyhowResult, TargetCanister},
+    IdsOpt, PemOpts, QrOpt,
 };
 
-use super::transfer;
+use super::transfer::ParsedTokens;
 
 /// Signs messages needed to participate in the initial token swap. This operation consists of two messages:
 /// First, `amount` ICP is transferred to the swap canister on the NNS ledger, under the subaccount for your principal.
@@ -22,7 +19,7 @@ use super::transfer;
 pub struct SwapOpts {
     /// The amount of ICP to transfer. Your neuron's share of the governance tokens at sale finalization will be proportional to your share of the contributed ICP.
     #[clap(long, requires("memo"), required_unless_present("notify-only"))]
-    amount: Option<String>,
+    amount: Option<ParsedTokens>,
     /// An arbitrary number used to identify the NNS block this transfer was made in.
     #[clap(long)]
     memo: Option<u64>,
@@ -30,22 +27,27 @@ pub struct SwapOpts {
     /// This is useful if there was an error previously submitting the notification which you have since rectified, or if you have made the transfer with another tool.
     #[clap(long)]
     notify_only: bool,
+
+    #[clap(flatten)]
+    pem: PemOpts,
+    #[clap(flatten)]
+    sns_canister_ids: IdsOpt,
+    #[clap(flatten)]
+    qr: QrOpt,
 }
 
-pub fn exec(
-    pem: &str,
-    sns_canister_ids: &SnsCanisterIds,
-    opts: SwapOpts,
-) -> AnyhowResult<Vec<IngressWithRequestId>> {
-    let (controller, _) = crate::commands::public::get_ids(&Some(pem.to_owned()))?;
+pub fn exec(opts: SwapOpts) -> AnyhowResult {
+    let sns_canister_ids = opts.sns_canister_ids.to_ids()?;
+    let pem = opts.pem.to_pem()?;
+    let (controller, _) = crate::commands::public::get_ids(&pem)?;
     let mut messages = vec![];
     if !opts.notify_only {
         let subaccount = Subaccount::from(&PrincipalId(controller));
-        let tokens = transfer::parse_tokens(&opts.amount.unwrap())?;
         let account_id =
             AccountIdentifier::new(sns_canister_ids.swap_canister_id.get(), Some(subaccount));
+        let amount = opts.amount.unwrap().0;
         let request = SendArgs {
-            amount: tokens,
+            amount,
             created_at_time: None,
             from_subaccount: None,
             fee: Tokens::from_e8s(10_000),
@@ -53,7 +55,7 @@ pub fn exec(
             to: account_id,
         };
         messages.push(sign_ingress_with_request_status_query(
-            pem,
+            &pem,
             "send_dfx",
             Encode!(&request)?,
             TargetCanister::IcpLedger,
@@ -63,10 +65,11 @@ pub fn exec(
         buyer: controller.to_text(),
     };
     messages.push(sign_ingress_with_request_status_query(
-        pem,
+        &pem,
         "refresh_buyer_tokens",
         Encode!(&refresh)?,
         TargetCanister::Swap(sns_canister_ids.swap_canister_id.get().0),
     )?);
-    Ok(messages)
+    super::print_vec(opts.qr.qr, &messages)?;
+    Ok(())
 }

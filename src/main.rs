@@ -1,13 +1,18 @@
 #![warn(unused_extern_crates)]
 
 use crate::lib::AnyhowResult;
-use anyhow::{anyhow, Context};
+use anyhow::{anyhow, bail, Context};
 use bip39::Mnemonic;
-use clap::{crate_version, Parser};
+use clap::{crate_version, Args, Parser};
 use ic_base_types::CanisterId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{collections::HashMap, fs::File, path::PathBuf, str::FromStr};
+use std::{
+    collections::HashMap,
+    fs::File,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 mod commands;
 mod lib;
@@ -16,18 +21,29 @@ mod lib;
 #[derive(Parser)]
 #[clap(name("sns-quill"), version = crate_version!())]
 pub struct CliOpts {
+    #[clap(subcommand)]
+    command: commands::Command,
+}
+
+#[derive(Args)]
+pub struct PemOpts {
     /// Path to your PEM file (use "-" for STDIN)
     #[clap(long)]
-    pem_file: Option<String>,
+    pem_file: Option<PathBuf>,
 
     /// Path to your seed file (use "-" for STDIN)
     #[clap(long)]
-    seed_file: Option<String>,
+    seed_file: Option<PathBuf>,
+}
 
-    /// Output the result(s) as UTF-8 QR codes.
-    #[clap(long)]
-    qr: bool,
+impl PemOpts {
+    fn to_pem(&self) -> AnyhowResult<String> {
+        read_pem(self.pem_file.as_deref(), self.seed_file.as_deref())
+    }
+}
 
+#[derive(Args)]
+pub struct IdsOpt {
     /// Path to the JSON file containing the SNS cluster's canister ids. This is a JSON
     /// file containing a JSON map of canister names to canister IDs.
     ///
@@ -41,10 +57,20 @@ pub struct CliOpts {
     ///.   ],
     /// }
     #[clap(long)]
-    canister_ids_file: Option<String>,
+    canister_ids_file: PathBuf,
+}
 
-    #[clap(subcommand)]
-    command: commands::Command,
+impl IdsOpt {
+    fn to_ids(&self) -> AnyhowResult<SnsCanisterIds> {
+        read_sns_canister_ids(&self.canister_ids_file)
+    }
+}
+
+#[derive(Args)]
+pub struct QrOpt {
+    /// Output the result(s) as UTF-8 QR codes.
+    #[clap(long)]
+    qr: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -56,40 +82,22 @@ pub struct SnsCanisterIds {
     pub dapp_canister_id_list: Vec<CanisterId>,
 }
 
-fn main() {
+fn main() -> AnyhowResult {
     let opts = CliOpts::parse();
-    if let Err(err) = run(opts) {
-        for (level, cause) in err.chain().enumerate() {
-            if level == 0 {
-                eprintln!("Error: {}", err);
-                continue;
-            }
-            if level == 1 {
-                eprintln!("Caused by:");
-            }
-            eprintln!("{:width$}{}", "", cause, width = level * 2);
-        }
-        std::process::exit(1);
-    }
-}
-
-fn run(opts: CliOpts) -> AnyhowResult<()> {
-    let pem = read_pem(opts.pem_file, opts.seed_file)?;
-    let canister_ids = read_sns_canister_ids(opts.canister_ids_file)?;
-    commands::exec(&pem, &canister_ids, opts.qr, opts.command)
+    commands::dispatch(opts.command)
 }
 
 /// Get PEM from the file if provided, or try to convert from the seed file
-fn read_pem(pem_file: Option<String>, seed_file: Option<String>) -> AnyhowResult<Option<String>> {
+fn read_pem(pem_file: Option<&Path>, seed_file: Option<&Path>) -> AnyhowResult<String> {
     match (pem_file, seed_file) {
-        (Some(pem_file), _) => read_file(&pem_file, "PEM").map(Some),
+        (Some(pem_file), _) => read_file(&pem_file, "PEM"),
         (_, Some(seed_file)) => {
             let seed = read_file(&seed_file, "seed")?;
             let mnemonic = parse_mnemonic(&seed)?;
             let mnemonic = lib::mnemonic_to_pem(&mnemonic)?;
-            Ok(Some(mnemonic))
+            Ok(mnemonic)
         }
-        _ => Ok(None),
+        _ => bail!("Either the PEM file or the seed file must be provided"),
     }
 }
 
@@ -101,17 +109,9 @@ fn read_pem(pem_file: Option<String>, seed_file: Option<String>) -> AnyhowResult
 ///   3. root_canister_id
 ///   4. dapp_canister_id_list (array)
 ///
-/// If no file_path is provided (i.e. not provided as input to the command), do nothing and return
-/// Ok(None). If the file_path is provided, but the file is malformed, Err is returned. Else, return
-/// the parsed struct.
-fn read_sns_canister_ids(file_path: Option<String>) -> AnyhowResult<Option<SnsCanisterIds>> {
-    let file_path = match file_path {
-        None => return Ok(None),
-        Some(path) => path,
-    };
-
-    let path = PathBuf::from(file_path);
-    let file = File::open(path).context("Could not open the SNS Canister Ids file")?;
+/// If the file is malformed, Err is returned. Else, return the parsed struct.
+fn read_sns_canister_ids(file_path: &Path) -> AnyhowResult<SnsCanisterIds> {
+    let file = File::open(file_path).context("Could not open the SNS Canister Ids file")?;
     let ids: HashMap<String, Value> =
         serde_json::from_reader(file).context("Could not parse the SNS Canister Ids file")?;
 
@@ -122,13 +122,13 @@ fn read_sns_canister_ids(file_path: Option<String>) -> AnyhowResult<Option<SnsCa
 
     let dapp_canister_id_list = parse_dapp_canister_id_list("dapp_canister_id_list", &ids)?;
 
-    Ok(Some(SnsCanisterIds {
+    Ok(SnsCanisterIds {
         governance_canister_id,
         ledger_canister_id,
         swap_canister_id,
         root_canister_id,
         dapp_canister_id_list,
-    }))
+    })
 }
 
 fn parse_canister_id(
@@ -181,25 +181,18 @@ fn parse_mnemonic(phrase: &str) -> AnyhowResult<Mnemonic> {
     Mnemonic::parse(phrase).context("Couldn't parse the seed phrase as a valid mnemonic. {:?}")
 }
 
-fn read_file(path: &str, name: &str) -> AnyhowResult<String> {
-    match path {
-        // read from STDIN
-        "-" => {
-            let mut buffer = String::new();
-            use std::io::Read;
-            std::io::stdin()
-                .read_to_string(&mut buffer)
-                .map(|_| buffer)
-                .context(format!("Couldn't read {} from STDIN", name))
-        }
-        path => std::fs::read_to_string(path).context(format!("Couldn't read {} file", name)),
+fn read_file(path: impl AsRef<Path>, name: &str) -> AnyhowResult<String> {
+    let path = path.as_ref();
+    if path == Path::new("-") {
+        let mut buffer = String::new();
+        use std::io::Read;
+        std::io::stdin()
+            .read_to_string(&mut buffer)
+            .map(|_| buffer)
+            .context(format!("Couldn't read {} from STDIN", name))
+    } else {
+        std::fs::read_to_string(path).with_context(|| format!("Couldn't read {} file", name))
     }
-}
-
-#[test]
-fn test_read_pem_none_none() {
-    let res = read_pem(None, None);
-    assert_eq!(None, res.expect("read_pem(None, None) failed"));
 }
 
 #[test]
@@ -208,14 +201,14 @@ fn test_read_pem_from_pem_file() {
 
     let mut pem_file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
 
-    let content = "pem".to_string();
+    let content = "pem";
     pem_file
         .write_all(content.as_bytes())
         .expect("Cannot write to temp file");
 
-    let res = read_pem(Some(pem_file.path().to_str().unwrap().to_string()), None);
+    let res = read_pem(Some(pem_file.path()), None);
 
-    assert_eq!(Some(content), res.expect("read_pem from pem file"));
+    assert_eq!(content, res.expect("read_pem from pem file"));
 }
 
 #[test]
@@ -230,9 +223,7 @@ fn test_read_pem_from_seed_file() {
         .expect("Cannot write to temp file");
     let mnemonic = lib::mnemonic_to_pem(&Mnemonic::parse(phrase).unwrap()).unwrap();
 
-    let pem = read_pem(None, Some(seed_file.path().to_str().unwrap().to_string()))
-        .expect("Unable to read seed_file")
-        .expect("None returned instead of Some");
+    let pem = read_pem(None, Some(seed_file.path())).expect("Unable to read seed_file");
 
     assert_eq!(mnemonic, pem);
 }
@@ -240,17 +231,11 @@ fn test_read_pem_from_seed_file() {
 #[test]
 fn test_read_pem_from_non_existing_file() {
     let dir = tempfile::tempdir().expect("Cannot create temp dir");
-    let non_existing_file = dir
-        .path()
-        .join("non_existing_pem_file")
-        .as_path()
-        .to_str()
-        .unwrap()
-        .to_string();
+    let non_existing_file = dir.path().join("non_existing_pem_file");
 
-    read_pem(Some(non_existing_file.clone()), None).unwrap_err();
+    read_pem(Some(&non_existing_file), None).unwrap_err();
 
-    read_pem(None, Some(non_existing_file)).unwrap_err();
+    read_pem(None, Some(&non_existing_file)).unwrap_err();
 }
 
 #[test]
@@ -275,9 +260,7 @@ fn test_read_canister_ids_from_file() {
     write!(canister_ids_file, "{}", json_str).expect("Cannot write to tmp file");
 
     let actual_canister_ids =
-        read_sns_canister_ids(Some(canister_ids_file.path().to_str().unwrap().to_string()))
-            .expect("Unable to read canister_ids_file")
-            .expect("None returned instead of Some");
+        read_sns_canister_ids(canister_ids_file.path()).expect("Unable to read canister_ids_file");
 
     assert_eq!(actual_canister_ids, expected_canister_ids);
 }
@@ -301,9 +284,7 @@ fn test_read_canister_ids_from_file_empty_dapp_canister_id_list() {
     write!(canister_ids_file, "{}", json_str).expect("Cannot write to tmp file");
 
     let actual_canister_ids =
-        read_sns_canister_ids(Some(canister_ids_file.path().to_str().unwrap().to_string()))
-            .expect("Unable to read canister_ids_file")
-            .expect("None returned instead of Some");
+        read_sns_canister_ids(canister_ids_file.path()).expect("Unable to read canister_ids_file");
 
     assert_eq!(actual_canister_ids, expected_canister_ids);
 }
@@ -311,15 +292,9 @@ fn test_read_canister_ids_from_file_empty_dapp_canister_id_list() {
 #[test]
 fn test_canister_ids_from_non_existing_file() {
     let dir = tempfile::tempdir().expect("Cannot create temp dir");
-    let non_existing_file = dir
-        .path()
-        .join("non_existing_pem_file")
-        .as_path()
-        .to_str()
-        .unwrap()
-        .to_string();
+    let non_existing_file = dir.path().join("non_existing_pem_file");
 
-    read_sns_canister_ids(Some(non_existing_file)).unwrap_err();
+    read_sns_canister_ids(&non_existing_file).unwrap_err();
 }
 
 #[test]
@@ -331,8 +306,7 @@ fn test_canister_ids_from_malformed_canister_id() {
     let raw_json = r#"{"governance_canister_id": "Not a valid canister id","ledger_canister_id": "Not a valid canister id","root_canister_id": "Not a valid canister id"}"#;
     write!(canister_ids_file, "{}", raw_json).expect("Cannot write to tmp file");
 
-    read_sns_canister_ids(Some(canister_ids_file.path().to_str().unwrap().to_string()))
-        .unwrap_err();
+    read_sns_canister_ids(canister_ids_file.path()).unwrap_err();
 }
 
 #[test]
@@ -344,6 +318,5 @@ fn test_canister_ids_from_missing_key() {
     let raw_json = r#"{"ledger_canister_id": "Not a valid canister id","root_canister_id": "Not a valid canister id"}"#;
     write!(canister_ids_file, "{}", raw_json).expect("Cannot write to tmp file");
 
-    read_sns_canister_ids(Some(canister_ids_file.path().to_str().unwrap().to_string()))
-        .unwrap_err();
+    read_sns_canister_ids(canister_ids_file.path()).unwrap_err();
 }

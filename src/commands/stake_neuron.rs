@@ -1,10 +1,7 @@
 use crate::{
-    commands::transfer,
-    lib::{
-        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
-        TargetCanister,
-    },
-    AnyhowResult, SnsCanisterIds,
+    commands::transfer::sign_transfer,
+    lib::{signing::sign_ingress_with_request_status_query, TargetCanister},
+    AnyhowResult, IdsOpt, PemOpts, QrOpt,
 };
 use candid::Encode;
 use clap::Parser;
@@ -18,7 +15,9 @@ use ic_sns_governance::pb::v1::{
     },
     ManageNeuron,
 };
-use ledger_canister::AccountIdentifier;
+use ledger_canister::{AccountIdentifier, Memo, DEFAULT_TRANSFER_FEE};
+
+use super::transfer::ParsedTokens;
 
 /// Signs messages needed to stake governance tokens for a neuron. First, stake-neuron will sign
 /// a ledger transfer to a subaccount of the Governance canister calculated from the
@@ -33,7 +32,7 @@ pub struct StakeNeuronOpts {
     /// is useful for situations where the transfer was initially made with some other command or
     /// tool
     #[clap(long)]
-    amount: Option<String>,
+    amount: Option<ParsedTokens>,
 
     /// An arbitrary number used in calculating the neuron's subaccount. The memo must be unique among
     /// the neurons claimed for a single PrincipalId. More information on ledger accounts and
@@ -41,18 +40,23 @@ pub struct StakeNeuronOpts {
     #[clap(long)]
     memo: u64,
 
-    /// The amount that the caller pays for the transaction, default is 10_000 e8s. Specify this amount
+    /// The amount that the caller pays for the transaction, default is 0.0001. Specify this amount
     /// when using an SNS that sets its own transaction fee
     #[clap(long)]
-    fee: Option<String>,
+    fee: Option<ParsedTokens>,
+
+    #[clap(flatten)]
+    pem: PemOpts,
+    #[clap(flatten)]
+    sns_canister_ids: IdsOpt,
+    #[clap(flatten)]
+    qr: QrOpt,
 }
 
-pub fn exec(
-    private_key_pem: &str,
-    sns_canister_ids: &SnsCanisterIds,
-    opts: StakeNeuronOpts,
-) -> AnyhowResult<Vec<IngressWithRequestId>> {
-    let (controller, _) = crate::commands::public::get_ids(&Some(private_key_pem.to_string()))?;
+pub fn exec(opts: StakeNeuronOpts) -> AnyhowResult {
+    let private_key_pem = opts.pem.to_pem()?;
+    let sns_canister_ids = opts.sns_canister_ids.to_ids()?;
+    let (controller, _) = crate::commands::public::get_ids(&private_key_pem)?;
     let neuron_subaccount =
         ledger::compute_neuron_staking_subaccount(PrincipalId::from(controller), opts.memo);
 
@@ -64,15 +68,14 @@ pub fn exec(
     // If amount is provided, sign a transfer message that will transfer tokens from the principal's
     // account on the ledger to a subaccount of the governance canister.
     if let Some(amount) = opts.amount {
-        messages.extend(transfer::exec(
-            private_key_pem,
-            sns_canister_ids,
-            transfer::TransferOpts {
-                to: account.to_hex(),
-                amount,
-                fee: opts.fee,
-                memo: Some(opts.memo.to_string()),
-            },
+        let fee = opts.fee.map_or(DEFAULT_TRANSFER_FEE, |fee| fee.0);
+        messages.push(sign_transfer(
+            &sns_canister_ids,
+            &private_key_pem,
+            &account,
+            amount.0,
+            fee,
+            Memo(opts.memo),
         )?)
     }
 
@@ -88,11 +91,11 @@ pub fn exec(
     })?;
 
     messages.push(sign_ingress_with_request_status_query(
-        private_key_pem,
+        &private_key_pem,
         "manage_neuron",
         args,
         TargetCanister::Governance(governance_canister_id.0),
     )?);
-
-    Ok(messages)
+    super::print_vec(opts.qr.qr, &messages)?;
+    Ok(())
 }

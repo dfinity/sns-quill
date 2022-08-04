@@ -1,1 +1,1 @@
-${CARGO_TARGET_DIR:-../target}/debug/sns-quill --canister-ids-file ./canister_ids.json --pem-file - get-swap-refund --amount 500 | ${CARGO_TARGET_DIR:-../target}/debug/sns-quill send --dry-run -
+${CARGO_TARGET_DIR:-../target}/debug/sns-quill get-swap-refund --amount 500 --canister-ids-file ./canister_ids.json --pem-file - | ${CARGO_TARGET_DIR:-../target}/debug/sns-quill send --dry-run -

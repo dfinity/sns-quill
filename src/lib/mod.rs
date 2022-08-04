@@ -1,5 +1,6 @@
 //! All the common functionality.
-use crate::SnsCanisterIds;
+use std::path::Path;
+
 use anyhow::{anyhow, Context};
 use bip39::Mnemonic;
 use candid::{
@@ -109,13 +110,13 @@ pub fn get_candid_type(idl: String, method_name: &str) -> Option<(TypeEnv, Funct
 }
 
 /// Reads from the file path or STDIN and returns the content.
-pub fn read_from_file(path: &str) -> AnyhowResult<String> {
+pub fn read_from_file(path: impl AsRef<Path>) -> AnyhowResult<String> {
+    let path = path.as_ref();
     use std::io::Read;
     let mut content = String::new();
-    if path == "-" {
+    if path == Path::new("-") {
         std::io::stdin().read_to_string(&mut content)?;
     } else {
-        let path = std::path::Path::new(&path);
         let mut file = std::fs::File::open(&path).context("Cannot open the message file.")?;
         file.read_to_string(&mut content)
             .context("Cannot read the message file.")?;
@@ -157,30 +158,10 @@ pub fn get_identity(pem: &str) -> Box<dyn Identity + Sync + Send> {
     }
 }
 
-pub fn require_pem(pem: &Option<String>) -> AnyhowResult<String> {
-    match pem {
-        None => Err(anyhow!(
-            "Cannot use anonymous principal, did you forget --pem-file <pem-file> ?"
-        )),
-        Some(val) => Ok(val.clone()),
-    }
-}
-
-pub fn require_canister_ids(
-    sns_canister_ids: &Option<SnsCanisterIds>,
-) -> AnyhowResult<SnsCanisterIds> {
-    match sns_canister_ids {
-        None => Err(anyhow!(
-            "Cannot sign command without knowing the SNS canister ids, did you forget --canister-ids-file <json-file> ?"
-        )),
-        Some(ids) => Ok(ids.clone()),
-    }
-}
-
 pub fn parse_query_response(response: Vec<u8>) -> AnyhowResult<Vec<u8>> {
     let cbor: Value = serde_cbor::from_slice(&response)
         .context("Invalid cbor data in the content of the message.")?;
-    if let Value::Map(m) = cbor {
+    if let Value::Map(mut m) = cbor {
         // Try to decode a rejected response.
         if let (Some(Value::Integer(reject_code)), Some(Value::Text(reject_message))) = (
             m.get(&Value::Text("reject_code".to_string())),
@@ -194,9 +175,9 @@ pub fn parse_query_response(response: Vec<u8>) -> AnyhowResult<Vec<u8>> {
         }
 
         // Try to decode a successful response.
-        if let Some(Value::Map(m)) = m.get(&Value::Text("reply".to_string())) {
-            if let Some(Value::Bytes(reply)) = m.get(&Value::Text("arg".to_string())) {
-                return Ok(reply.clone());
+        if let Some(Value::Map(mut m)) = m.remove(&Value::Text("reply".to_string())) {
+            if let Some(Value::Bytes(reply)) = m.remove(&Value::Text("arg".to_string())) {
+                return Ok(reply);
             }
         }
     }

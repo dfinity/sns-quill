@@ -6,7 +6,7 @@ use crate::{
         AnyhowResult, TargetCanister,
     },
 };
-use anyhow::{anyhow, Context};
+use anyhow::{anyhow, bail, Context};
 use candid::Decode;
 use clap::Parser;
 use ic_agent::{
@@ -15,13 +15,13 @@ use ic_agent::{
 };
 use ic_sns_governance::pb::v1::ManageNeuronResponse;
 use ledger_canister::{BlockHeight, Tokens, TransferError};
-use std::str::FromStr;
+use std::{path::PathBuf, str::FromStr};
 
 /// Sends a signed message or a set of messages.
 #[derive(Parser)]
 pub struct SendOpts {
     /// Path to the signed message. Use "-" for STDIN.
-    file_name: String,
+    file_name: PathBuf,
 
     /// Will display the signed message, but not send it.
     #[clap(long)]
@@ -42,10 +42,10 @@ pub async fn exec(opts: SendOpts) -> AnyhowResult {
         }
     } else if let Ok(vals) = serde_json::from_str::<Vec<IngressWithRequestId>>(&json) {
         for tx in vals {
-            send_ingress_and_check_status(&tx, &opts).await?;
+            send_ingress_and_check_status(tx, &opts).await?;
         }
     } else {
-        return Err(anyhow!("Invalid JSON content"));
+        bail!("Invalid JSON content");
     }
     Ok(())
 }
@@ -63,7 +63,7 @@ pub async fn send_unsigned_ingress(
         target_canister,
     )?;
     send_ingress_and_check_status(
-        &msg,
+        msg,
         &SendOpts {
             file_name: Default::default(), // Not used.
             yes: false,
@@ -75,7 +75,7 @@ pub async fn send_unsigned_ingress(
 
 /// Submits a ingress message to the Internet Computer and retrieves a reply.
 async fn send_ingress_and_check_status(
-    message: &IngressWithRequestId,
+    message: IngressWithRequestId,
     opts: &SendOpts,
 ) -> AnyhowResult {
     send(&message.ingress, opts).await?;
@@ -83,7 +83,7 @@ async fn send_ingress_and_check_status(
         return Ok(());
     }
     let (_, _, method_name, _) = message.ingress.parse()?;
-    let result = request_status::submit(&message.request_status).await?;
+    let result = request_status::submit(message.request_status).await?;
     print_response(result, method_name)?;
     Ok(())
 }

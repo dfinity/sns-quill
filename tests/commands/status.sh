@@ -1,1 +1,1 @@
-${CARGO_TARGET_DIR:-../target}/debug/sns-quill --canister-ids-file ./canister_ids.json status --dry-run
+${CARGO_TARGET_DIR:-../target}/debug/sns-quill status --dry-run --canister-ids-file ./canister_ids.json

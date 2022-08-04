@@ -1,10 +1,6 @@
 use crate::{
-    lib::{
-        parse_neuron_id,
-        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
-        TargetCanister,
-    },
-    AnyhowResult, SnsCanisterIds,
+    lib::{parse_neuron_id, signing::sign_ingress_with_request_status_query, TargetCanister},
+    AnyhowResult, IdsOpt, PemOpts, QrOpt,
 };
 use anyhow::{Context, Error};
 use candid::Encode;
@@ -44,22 +40,28 @@ pub struct MakeUpgradeCanisterProposalOpts {
     /// Path to the WASM file to be installed onto the target canister.
     #[clap(long)]
     wasm_path: String,
+
+    #[clap(flatten)]
+    pem: PemOpts,
+    #[clap(flatten)]
+    sns_canister_ids: IdsOpt,
+    #[clap(flatten)]
+    qr: QrOpt,
 }
 
 pub fn exec(
-    private_key_pem: &str,
-    sns_canister_ids: &SnsCanisterIds,
-    opts: MakeUpgradeCanisterProposalOpts,
-) -> AnyhowResult<Vec<IngressWithRequestId>> {
-    let MakeUpgradeCanisterProposalOpts {
+    MakeUpgradeCanisterProposalOpts {
         proposer_neuron_id,
         title,
         url,
         summary,
         target_canister_id,
         wasm_path,
-    } = opts;
-
+        pem,
+        sns_canister_ids,
+        qr,
+    }: MakeUpgradeCanisterProposalOpts,
+) -> AnyhowResult {
     let target_canister_id = PrincipalId(Principal::from_text(target_canister_id)?);
     let wasm = std::fs::read(wasm_path).context("Unable to read --wasm-path.")?;
 
@@ -84,7 +86,7 @@ pub fn exec(
 
     let neuron_id = parse_neuron_id(proposer_neuron_id)?;
     let neuron_subaccount = neuron_id.subaccount().map_err(Error::msg)?;
-    let governance_canister_id = sns_canister_ids.governance_canister_id.get().0;
+    let governance_canister_id = sns_canister_ids.to_ids()?.governance_canister_id.get().0;
 
     let args = Encode!(&ManageNeuron {
         subaccount: neuron_subaccount.to_vec(),
@@ -92,16 +94,17 @@ pub fn exec(
     })?;
 
     let msg = sign_ingress_with_request_status_query(
-        private_key_pem,
+        &pem.to_pem()?,
         "manage_neuron",
         args,
         TargetCanister::Governance(governance_canister_id),
     )?;
 
-    Ok(vec![msg])
+    super::print_vec(qr.qr, &[msg])?;
+    Ok(())
 }
 
-fn summarize(target_canister_id: PrincipalId, wasm: &Vec<u8>) -> String {
+fn summarize(target_canister_id: PrincipalId, wasm: &[u8]) -> String {
     // Fingerprint wasm.
     let mut hasher = Sha256::new();
     hasher.update(&wasm);

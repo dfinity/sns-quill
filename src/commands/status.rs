@@ -4,7 +4,7 @@ use ic_sns_swap::pb::v1::GetCanisterStatusRequest;
 
 use crate::{
     lib::{AnyhowResult, TargetCanister},
-    SnsCanisterIds,
+    IdsOpt,
 };
 
 use super::send::send_unsigned_ingress;
@@ -16,10 +16,13 @@ pub struct StatusOpts {
     /// Will display the query, but not send it.
     #[clap(long)]
     dry_run: bool,
+
+    #[clap(flatten)]
+    ids: IdsOpt,
 }
 
-pub async fn exec(ids: &SnsCanisterIds, opts: StatusOpts) -> AnyhowResult {
-    let root_canister_id = ids.root_canister_id.get().0;
+pub async fn exec(opts: StatusOpts) -> AnyhowResult {
+    let root_canister_id = opts.ids.to_ids()?.root_canister_id.get().0;
     let arg = Encode!(&GetCanisterStatusRequest {})?;
     send_unsigned_ingress(
         "get_sns_canisters_summary",

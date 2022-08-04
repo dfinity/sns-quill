@@ -9,11 +9,10 @@ use ic_sns_governance::pb::v1::{
 
 use crate::{
     lib::{
-        parse_neuron_id,
-        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
-        AnyhowResult, TargetCanister,
+        parse_neuron_id, signing::sign_ingress_with_request_status_query, AnyhowResult,
+        TargetCanister,
     },
-    SnsCanisterIds,
+    IdsOpt, PemOpts, QrOpt,
 };
 
 /// Signs a ManageNeuron message to add or remove permissions for a principal to/from a neuron.
@@ -39,6 +38,13 @@ pub struct NeuronPermissionOpts {
         required(true)
     )]
     permissions: Vec<NeuronPermissionType>,
+
+    #[clap(flatten)]
+    pem: PemOpts,
+    #[clap(flatten)]
+    canister_ids: IdsOpt,
+    #[clap(flatten)]
+    qr: QrOpt,
 }
 
 #[derive(ArgEnum, Clone)]
@@ -47,11 +53,9 @@ enum Subcmd {
     Remove,
 }
 
-pub fn exec(
-    pem: &str,
-    canister_ids: &SnsCanisterIds,
-    opts: NeuronPermissionOpts,
-) -> AnyhowResult<Vec<IngressWithRequestId>> {
+pub fn exec(opts: NeuronPermissionOpts) -> AnyhowResult {
+    let pem = opts.pem.to_pem()?;
+    let canister_ids = opts.canister_ids.to_ids()?;
     let id = parse_neuron_id(opts.neuron_id)?;
     let neuron_subaccount = id.subaccount().map_err(|e| anyhow!(e))?;
     let permission_list = NeuronPermissionList {
@@ -72,10 +76,11 @@ pub fn exec(
         }),
     };
     let msg = sign_ingress_with_request_status_query(
-        pem,
+        &pem,
         "manage_neuron",
         Encode!(&req)?,
         TargetCanister::Governance(canister_ids.governance_canister_id.get().0),
     )?;
-    Ok(vec![msg])
+    super::print_vec(opts.qr.qr, &[msg])?;
+    Ok(())
 }

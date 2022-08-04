@@ -1,10 +1,6 @@
 use crate::{
-    lib::{
-        parse_neuron_id,
-        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
-        TargetCanister,
-    },
-    AnyhowResult, SnsCanisterIds,
+    lib::{parse_neuron_id, signing::sign_ingress_with_request_status_query, TargetCanister},
+    AnyhowResult, IdsOpt, PemOpts, QrOpt,
 };
 use anyhow::Error;
 use candid::{Decode, Encode, IDLArgs};
@@ -38,13 +34,18 @@ pub struct MakeProposalOpts {
     /// )'
     #[clap(long)]
     proposal: String,
+
+    #[clap(flatten)]
+    pem: PemOpts,
+    #[clap(flatten)]
+    sns_canister_ids: IdsOpt,
+    #[clap(flatten)]
+    qr: QrOpt,
 }
 
-pub fn exec(
-    private_key_pem: &str,
-    sns_canister_ids: &SnsCanisterIds,
-    opts: MakeProposalOpts,
-) -> AnyhowResult<Vec<IngressWithRequestId>> {
+pub fn exec(opts: MakeProposalOpts) -> AnyhowResult {
+    let private_key_pem = opts.pem.to_pem()?;
+    let sns_canister_ids = opts.sns_canister_ids.to_ids()?;
     let neuron_id = parse_neuron_id(opts.proposer_neuron_id)?;
     let neuron_subaccount = neuron_id.subaccount().map_err(Error::msg)?;
     let governance_canister_id = sns_canister_ids.governance_canister_id.get().0;
@@ -57,13 +58,13 @@ pub fn exec(
     })?;
 
     let msg = sign_ingress_with_request_status_query(
-        private_key_pem,
+        &private_key_pem,
         "manage_neuron",
         args,
         TargetCanister::Governance(governance_canister_id),
     )?;
-
-    Ok(vec![msg])
+    super::print_vec(opts.qr.qr, &[msg])?;
+    Ok(())
 }
 
 fn parse_proposal_from_candid_string(proposal_candid: String) -> AnyhowResult<Proposal> {

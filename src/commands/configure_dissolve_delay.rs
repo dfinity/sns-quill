@@ -1,10 +1,6 @@
 use crate::{
-    lib::{
-        parse_neuron_id,
-        signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
-        TargetCanister,
-    },
-    AnyhowResult, SnsCanisterIds,
+    lib::{parse_neuron_id, signing::sign_ingress_with_request_status_query, TargetCanister},
+    AnyhowResult, IdsOpt, PemOpts, QrOpt,
 };
 use anyhow::{anyhow, Error};
 use candid::Encode;
@@ -47,22 +43,26 @@ pub struct ConfigureDissolveDelayOpts {
     /// additional_dissolve_delay_seconds flag
     #[clap(long)]
     stop_dissolving: bool,
+
+    #[clap(flatten)]
+    pem: PemOpts,
+    #[clap(flatten)]
+    sns_canister_ids: IdsOpt,
+    #[clap(flatten)]
+    qr: QrOpt,
 }
 
-pub fn exec(
-    private_key_pem: &str,
-    sns_canister_ids: &SnsCanisterIds,
-    opts: ConfigureDissolveDelayOpts,
-) -> AnyhowResult<Vec<IngressWithRequestId>> {
+pub fn exec(opts: ConfigureDissolveDelayOpts) -> AnyhowResult {
     require_mutually_exclusive(
         opts.start_dissolving,
         opts.stop_dissolving,
         &opts.additional_dissolve_delay_seconds,
     )?;
-
+    let private_key_pem = opts.pem.to_pem()?;
     let neuron_id = parse_neuron_id(opts.neuron_id)?;
     let neuron_subaccount = neuron_id.subaccount().map_err(Error::msg)?;
-    let governance_canister_id = PrincipalId::from(sns_canister_ids.governance_canister_id).0;
+    let governance_canister_id =
+        PrincipalId::from(opts.sns_canister_ids.to_ids()?.governance_canister_id).0;
 
     let mut args = Vec::new();
 
@@ -100,12 +100,13 @@ pub fn exec(
     };
 
     let msg = sign_ingress_with_request_status_query(
-        private_key_pem,
+        &private_key_pem,
         "manage_neuron",
         args,
         TargetCanister::Governance(governance_canister_id),
     )?;
-    Ok(vec![msg])
+    super::print_vec(opts.qr.qr, &[msg])?;
+    Ok(())
 }
 
 fn require_mutually_exclusive(
