@@ -1,6 +1,7 @@
 # sns-quill
 
-Cold wallet toolkit for interacting with a Service Nervous System's Ledger & Governance canisters.
+Cold wallet toolkit for interacting with the ledger and governance canister of a service nervous system (SNS).
+<!-- TODO: link to SNS documentation or code -->
 
 ## Disclaimer
 
@@ -8,8 +9,6 @@ YOU EXPRESSLY ACKNOWLEDGE AND AGREE THAT USE OF THIS SOFTWARE IS AT YOUR SOLE RI
 AUTHORS OF THIS SOFTWARE SHALL NOT BE LIABLE FOR DAMAGES OF ANY TYPE, WHETHER DIRECT OR INDIRECT.
 
 ## Usage
-
----
 
 ### Generating Identities
 
@@ -33,9 +32,6 @@ $ sns-quill --pem-file identity.pem public-ids
 Principal id: zukuq-h6vpk-jp4g2-j37gz-vnm7b-34yi7-zehhn-zqwks-vzzms-dvsw4-5qe
 Account id: 40c7abdde72cb8b7838bba9290e78c8e6819507763447f38afaa2a07a82dafe0
 ```
-
----
-
 ### Signing and Sending Messages
 
 `sns-quill` is a toolkit for interacting with the Service Nervous System's (SNS) canisters using self-custody keys. These
@@ -60,17 +56,17 @@ parses the ids for later use. An example JSON file would look like this:
 **Note** if the CanisterIds are incorrect,
 signing will succeed but submitting the messages to the IC will result in a rejected message.
 
----
+### Commands for interacting with the SNS ledger canister 
 
-### Ledger Commands
 
+#### Check ledger balance 
 Run the following command to check the balance of an account on an SNS ledger. This will query the ledger and must
 be run from a computer connected to the internet.
 
 ```shell
 $ sns-quill --canister-ids-file <path-to-file> account-balance <account-id>
 ```
-
+#### Send SNS tokens
 To send tokens to another account on the SNS ledger run the following command. This will sign a transfer transaction
 and print to STDOUT:
 
@@ -89,11 +85,10 @@ To send the signed message:
 $ quill send <path-to-file>
 ```
 
----
+### Commands to interact with the SNS governance canister
 
-### Governance Commands
-
-To stake tokens in a neuron, two messages are required: a ledger transfer and a governance claim_or_refresh command.
+#### Stake a neuron
+To stake SNS tokens in a neuron, two messages are required: a ledger transfer to the neuron's account and a call to the governance canister to claim the neuron (claim_or_refresh command).
 `sns-quill` provides a single command to accomplish this.
 
 ```shell
@@ -111,6 +106,7 @@ $ python3 -c "print(bytes($NEURON_ID_ARRAY).hex())"
 83a7d2b12f654ff58335e5a2512ccae0d7839c744b1807a47c96f5b9f3969069
 ```
 
+#### Increase a neuron's dissolve delay
 To do more meaningful things with your neuron (like voting and making proposals), a neuron must have a dissolve delay.
 To extend the dissolve delay of the Neuron, run the following command.
 
@@ -118,6 +114,7 @@ To extend the dissolve delay of the Neuron, run the following command.
 $ sns-quill --pem-file <path-to-file> --canister-ids-file <path-to-file> configure-dissolve-delay <neuron-id> --additional-dissolve-delay-seconds <seconds>
 ```
 
+#### Submit a proposal
 To submit a proposal, run the following command. The proposal must be in submitted as candid.
 
 ```shell
@@ -140,7 +137,7 @@ Below is an example candid Motion proposal.
     } 
 )'
 ```
-
+#### Vote on a proposal
 To vote on a proposal, run the following command.
 
 ```shell
