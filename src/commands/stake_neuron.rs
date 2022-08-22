@@ -1,5 +1,5 @@
 use crate::{
-    commands::transfer,
+    commands::transfer::{self, HexSubaccount},
     lib::{
         signing::{sign_ingress_with_request_status_query, IngressWithRequestId},
         TargetCanister,
@@ -18,7 +18,6 @@ use ic_sns_governance::pb::v1::{
     },
     ManageNeuron,
 };
-use ledger_canister::AccountIdentifier;
 
 /// Signs messages needed to stake governance tokens for a neuron. First, stake-neuron will sign
 /// a ledger transfer to a subaccount of the Governance canister calculated from the
@@ -57,7 +56,6 @@ pub fn exec(
         ledger::compute_neuron_staking_subaccount(PrincipalId::from(controller), opts.memo);
 
     let governance_canister_id = PrincipalId::from(sns_canister_ids.governance_canister_id);
-    let account = AccountIdentifier::new(governance_canister_id, Some(neuron_subaccount));
 
     let mut messages = Vec::new();
 
@@ -68,7 +66,8 @@ pub fn exec(
             private_key_pem,
             sns_canister_ids,
             transfer::TransferOpts {
-                to: account.to_hex(),
+                to_principal: governance_canister_id,
+                to_subaccount: Some(HexSubaccount(neuron_subaccount.0)),
                 amount,
                 fee: opts.fee,
                 memo: Some(opts.memo.to_string()),
