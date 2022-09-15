@@ -229,10 +229,10 @@ pub fn parse_neuron_id(hex_encoded_id: String) -> AnyhowResult<NeuronId> {
 /// Converts mnemonic to PEM format
 pub fn mnemonic_to_pem(mnemonic: &Mnemonic, password: Option<&[u8]>) -> AnyhowResult<String> {
     let seed = mnemonic.to_seed("");
-    let ext = tiny_hderive::bip32::ExtendedPrivKey::derive(&seed, "m/44'/223'/0'/0/0")
+    let ext = bip32::XPrv::derive_from_path(&seed, &"m/44'/223'/0'/0/0".parse().unwrap())
         .map_err(|err| anyhow!("{:?}", err))
         .context("Failed to derive BIP32 extended private key")?;
-    let secret = ext.secret();
+    let secret = ext.to_bytes();
     let secret_key = SecretKey::from_be_bytes(&secret).context("Failed to parse secret key")?;
     let pem = Pem {
         tag: String::from("EC PARAMETERS"),
