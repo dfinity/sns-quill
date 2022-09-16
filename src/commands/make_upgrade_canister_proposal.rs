@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 use crate::{
     lib::{
@@ -46,7 +46,7 @@ pub struct MakeUpgradeCanisterProposalOpts {
 
     /// Path to the WASM file to be installed onto the target canister.
     #[clap(long)]
-    wasm_path: String,
+    wasm_path: PathBuf,
 }
 
 pub fn exec(
