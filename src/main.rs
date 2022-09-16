@@ -86,7 +86,7 @@ fn read_pem(pem_file: Option<String>, seed_file: Option<String>) -> AnyhowResult
         (_, Some(seed_file)) => {
             let seed = read_file(&seed_file, "seed")?;
             let mnemonic = parse_mnemonic(&seed)?;
-            let mnemonic = lib::mnemonic_to_pem(&mnemonic)?;
+            let mnemonic = lib::mnemonic_to_pem(&mnemonic, None)?;
             Ok(Some(mnemonic))
         }
         _ => Ok(None),
@@ -228,7 +228,7 @@ fn test_read_pem_from_seed_file() {
     seed_file
         .write_all(phrase.as_bytes())
         .expect("Cannot write to temp file");
-    let mnemonic = lib::mnemonic_to_pem(&Mnemonic::parse(phrase).unwrap()).unwrap();
+    let mnemonic = lib::mnemonic_to_pem(&Mnemonic::parse(phrase).unwrap(), None).unwrap();
 
     let pem = read_pem(None, Some(seed_file.path().to_str().unwrap().to_string()))
         .expect("Unable to read seed_file")
