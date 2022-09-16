@@ -1,4 +1,6 @@
 //! All the common functionality.
+use std::path::Path;
+
 use crate::SnsCanisterIds;
 use anyhow::{anyhow, Context};
 use bip39::Mnemonic;
@@ -103,13 +105,12 @@ pub fn get_candid_type(idl: String, method_name: &str) -> Option<(TypeEnv, Funct
 }
 
 /// Reads from the file path or STDIN and returns the content.
-pub fn read_from_file(path: &str) -> AnyhowResult<String> {
+pub fn read_from_file(path: &Path) -> AnyhowResult<String> {
     use std::io::Read;
     let mut content = String::new();
-    if path == "-" {
+    if path == Path::new("-") {
         std::io::stdin().read_to_string(&mut content)?;
     } else {
-        let path = std::path::Path::new(&path);
         let mut file = std::fs::File::open(&path).context("Cannot open the message file.")?;
         file.read_to_string(&mut content)
             .context("Cannot read the message file.")?;
@@ -133,15 +134,33 @@ pub fn get_agent(pem: &str) -> AnyhowResult<Agent> {
 
 /// Returns an identity derived from the private key.
 pub fn get_identity(pem: &str) -> AnyhowResult<Box<dyn Identity + Sync + Send>> {
+    fn is_encrypted_err(pk_error: pkcs8::Error) -> bool {
+        use pkcs8::{
+            der::{pem::Error as PemError, ErrorKind as DerError},
+            Error as PkError,
+        };
+        match pk_error {
+            PkError::EncryptedPrivateKey(_) => true,
+            PkError::Asn1(der_err)
+                if matches!(
+                    der_err.kind(),
+                    DerError::Pem(PemError::UnexpectedTypeLabel { .. })
+                ) =>
+            {
+                true
+            }
+            _ => false,
+        }
+    }
     if pem.is_empty() {
         return Ok(Box::new(AnonymousIdentity));
     }
     // pkcs8?
     Ok(match SecretKey::from_pkcs8_pem(pem) {
         Ok(key) => Box::new(Secp256k1Identity::from_private_key(key)),
-        Err(pkcs8::Error::EncryptedPrivateKey(_)) => {
+        Err(pk_error) if is_encrypted_err(pk_error) => {
             let password = Password::new()
-                .with_prompt("PEM decryption password:")
+                .with_prompt("PEM decryption password")
                 .interact()?;
             Box::new(Secp256k1Identity::from_private_key(
                 SecretKey::from_pkcs8_encrypted_pem(pem, password)?,

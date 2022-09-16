@@ -16,13 +16,13 @@ use ic_agent::{
 use ic_icrc1::endpoints::TransferError;
 use ic_ledger_core::Tokens;
 use ic_sns_governance::pb::v1::ManageNeuronResponse;
-use std::str::FromStr;
+use std::{path::PathBuf, str::FromStr};
 
 /// Sends a signed message or a set of messages.
 #[derive(Parser)]
 pub struct SendOpts {
     /// Path to the signed message. Use "-" for STDIN.
-    file_name: String,
+    file_name: PathBuf,
 
     /// Will display the signed message, but not send it.
     #[clap(long)]

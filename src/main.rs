@@ -2,7 +2,6 @@
 
 use crate::lib::AnyhowResult;
 use anyhow::{anyhow, Context};
-use bip39::Mnemonic;
 use clap::{crate_version, Parser};
 use ic_base_types::CanisterId;
 use serde::{Deserialize, Serialize};
@@ -17,15 +16,11 @@ mod lib;
 #[clap(name("sns-quill"), version = crate_version!())]
 pub struct CliOpts {
     /// Path to your PEM file (use "-" for STDIN)
-    #[clap(long)]
+    #[clap(long, global(true))]
     pem_file: Option<String>,
 
-    /// Path to your seed file (use "-" for STDIN)
-    #[clap(long)]
-    seed_file: Option<String>,
-
     /// Output the result(s) as UTF-8 QR codes.
-    #[clap(long)]
+    #[clap(long, global(true))]
     qr: bool,
 
     /// Path to the JSON file containing the SNS cluster's canister ids. This is a JSON
@@ -40,7 +35,7 @@ pub struct CliOpts {
     ///.      "qoctq-giaaa-aaaaa-aaaea-cai"
     ///.   ],
     /// }
-    #[clap(long)]
+    #[clap(long, global(true))]
     canister_ids_file: Option<String>,
 
     #[clap(subcommand)]
@@ -74,21 +69,15 @@ fn main() {
 }
 
 fn run(opts: CliOpts) -> AnyhowResult<()> {
-    let pem = read_pem(opts.pem_file, opts.seed_file)?;
+    let pem = read_pem(opts.pem_file)?;
     let canister_ids = read_sns_canister_ids(opts.canister_ids_file)?;
     commands::exec(&pem, &canister_ids, opts.qr, opts.command)
 }
 
 /// Get PEM from the file if provided, or try to convert from the seed file
-fn read_pem(pem_file: Option<String>, seed_file: Option<String>) -> AnyhowResult<Option<String>> {
-    match (pem_file, seed_file) {
-        (Some(pem_file), _) => read_file(&pem_file, "PEM").map(Some),
-        (_, Some(seed_file)) => {
-            let seed = read_file(&seed_file, "seed")?;
-            let mnemonic = parse_mnemonic(&seed)?;
-            let mnemonic = lib::mnemonic_to_pem(&mnemonic, None)?;
-            Ok(Some(mnemonic))
-        }
+fn read_pem(pem_file: Option<String>) -> AnyhowResult<Option<String>> {
+    match pem_file {
+        Some(pem_file) => read_file(&pem_file, "PEM").map(Some),
         _ => Ok(None),
     }
 }
@@ -177,10 +166,6 @@ fn parse_dapp_canister_id_list(
     }
 }
 
-fn parse_mnemonic(phrase: &str) -> AnyhowResult<Mnemonic> {
-    Mnemonic::parse(phrase).context("Couldn't parse the seed phrase as a valid mnemonic. {:?}")
-}
-
 fn read_file(path: &str, name: &str) -> AnyhowResult<String> {
     match path {
         // read from STDIN
@@ -198,8 +183,8 @@ fn read_file(path: &str, name: &str) -> AnyhowResult<String> {
 
 #[test]
 fn test_read_pem_none_none() {
-    let res = read_pem(None, None);
-    assert_eq!(None, res.expect("read_pem(None, None) failed"));
+    let res = read_pem(None);
+    assert_eq!(None, res.expect("read_pem(None) failed"));
 }
 
 #[test]
@@ -213,28 +198,9 @@ fn test_read_pem_from_pem_file() {
         .write_all(content.as_bytes())
         .expect("Cannot write to temp file");
 
-    let res = read_pem(Some(pem_file.path().to_str().unwrap().to_string()), None);
+    let res = read_pem(Some(pem_file.path().to_str().unwrap().to_string()));
 
     assert_eq!(Some(content), res.expect("read_pem from pem file"));
-}
-
-#[test]
-fn test_read_pem_from_seed_file() {
-    use std::io::Write;
-
-    let mut seed_file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
-
-    let phrase = "ozone drill grab fiber curtain grace pudding thank cruise elder eight about";
-    seed_file
-        .write_all(phrase.as_bytes())
-        .expect("Cannot write to temp file");
-    let mnemonic = lib::mnemonic_to_pem(&Mnemonic::parse(phrase).unwrap(), None).unwrap();
-
-    let pem = read_pem(None, Some(seed_file.path().to_str().unwrap().to_string()))
-        .expect("Unable to read seed_file")
-        .expect("None returned instead of Some");
-
-    assert_eq!(mnemonic, pem);
 }
 
 #[test]
@@ -248,9 +214,7 @@ fn test_read_pem_from_non_existing_file() {
         .unwrap()
         .to_string();
 
-    read_pem(Some(non_existing_file.clone()), None).unwrap_err();
-
-    read_pem(None, Some(non_existing_file)).unwrap_err();
+    read_pem(Some(non_existing_file.clone())).unwrap_err();
 }
 
 #[test]
