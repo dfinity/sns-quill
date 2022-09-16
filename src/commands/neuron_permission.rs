@@ -1,6 +1,9 @@
+use std::sync::Arc;
+
 use anyhow::anyhow;
 use candid::Encode;
 use clap::{ArgEnum, Parser};
+use ic_agent::Identity;
 use ic_base_types::PrincipalId;
 use ic_sns_governance::pb::v1::{
     manage_neuron::{AddNeuronPermissions, Command, RemoveNeuronPermissions},
@@ -48,7 +51,7 @@ enum Subcmd {
 }
 
 pub fn exec(
-    pem: &str,
+    ident: Arc<dyn Identity>,
     canister_ids: &SnsCanisterIds,
     opts: NeuronPermissionOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
@@ -72,7 +75,7 @@ pub fn exec(
         }),
     };
     let msg = sign_ingress_with_request_status_query(
-        pem,
+        ident,
         "manage_neuron",
         Encode!(&req)?,
         TargetCanister::Governance(canister_ids.governance_canister_id.get().0),

@@ -11,12 +11,13 @@ use candid::{Decode, Nat};
 use clap::Parser;
 use ic_agent::{
     agent::{http_transport::ReqwestHttpReplicaV2Transport, ReplicaV2Transport},
+    identity::AnonymousIdentity,
     RequestId,
 };
 use ic_icrc1::endpoints::TransferError;
 use ic_ledger_core::Tokens;
 use ic_sns_governance::pb::v1::ManageNeuronResponse;
-use std::{path::PathBuf, str::FromStr};
+use std::{path::PathBuf, str::FromStr, sync::Arc};
 
 /// Sends a signed message or a set of messages.
 #[derive(Parser)]
@@ -58,7 +59,7 @@ pub async fn send_unsigned_ingress(
     target_canister: TargetCanister,
 ) -> AnyhowResult {
     let msg = crate::lib::signing::sign_ingress_with_request_status_query(
-        "",
+        Arc::new(AnonymousIdentity),
         method_name,
         args,
         target_canister,

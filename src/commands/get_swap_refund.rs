@@ -1,5 +1,8 @@
+use std::sync::Arc;
+
 use candid::Encode;
 use clap::Parser;
+use ic_agent::Identity;
 use ic_sns_swap::pb::v1::ErrorRefundIcpRequest;
 
 use crate::{
@@ -26,7 +29,7 @@ pub struct GetSwapRefundOpts {
 }
 
 pub fn exec(
-    pem: &str,
+    ident: Arc<dyn Identity>,
     sns_canister_ids: &SnsCanisterIds,
     opts: GetSwapRefundOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
@@ -41,7 +44,7 @@ pub fn exec(
         fee_override_e8s: fee,
     };
     let req = sign_ingress_with_request_status_query(
-        pem,
+        ident,
         "error_refund_icp",
         Encode!(&message)?,
         TargetCanister::Swap(sns_canister_ids.swap_canister_id.get().0),

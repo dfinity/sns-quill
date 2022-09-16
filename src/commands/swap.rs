@@ -1,5 +1,8 @@
+use std::sync::Arc;
+
 use candid::Encode;
 use clap::Parser;
+use ic_agent::Identity;
 use ic_base_types::PrincipalId;
 use ic_sns_swap::pb::v1::RefreshBuyerTokensRequest;
 use ledger_canister::{AccountIdentifier, Memo, SendArgs, Subaccount, Tokens};
@@ -33,11 +36,11 @@ pub struct SwapOpts {
 }
 
 pub fn exec(
-    pem: &str,
+    ident: Arc<dyn Identity>,
     sns_canister_ids: &SnsCanisterIds,
     opts: SwapOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
-    let (controller, _) = crate::commands::public::get_ids(&Some(pem.to_owned()))?;
+    let (controller, _) = crate::commands::public::get_ids(Some(ident.clone()))?;
     let mut messages = vec![];
     if !opts.notify_only {
         let subaccount = Subaccount::from(&PrincipalId(controller));
@@ -53,7 +56,7 @@ pub fn exec(
             to: account_id,
         };
         messages.push(sign_ingress_with_request_status_query(
-            pem,
+            ident.clone(),
             "send_dfx",
             Encode!(&request)?,
             TargetCanister::IcpLedger,
@@ -63,7 +66,7 @@ pub fn exec(
         buyer: controller.to_text(),
     };
     messages.push(sign_ingress_with_request_status_query(
-        pem,
+        ident,
         "refresh_buyer_tokens",
         Encode!(&refresh)?,
         TargetCanister::Swap(sns_canister_ids.swap_canister_id.get().0),

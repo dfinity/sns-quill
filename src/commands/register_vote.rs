@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     lib::{
         parse_neuron_id,
@@ -9,6 +11,7 @@ use crate::{
 use anyhow::{anyhow, Error};
 use candid::Encode;
 use clap::Parser;
+use ic_agent::Identity;
 use ic_sns_governance::pb::v1::{
     manage_neuron, manage_neuron::RegisterVote, ManageNeuron, ProposalId, Vote,
 };
@@ -33,7 +36,7 @@ pub struct RegisterVoteOpts {
 }
 
 pub fn exec(
-    private_key_pem: &str,
+    ident: Arc<dyn Identity>,
     sns_canister_ids: &SnsCanisterIds,
     opts: RegisterVoteOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
@@ -60,7 +63,7 @@ pub fn exec(
     })?;
 
     let msg = sign_ingress_with_request_status_query(
-        private_key_pem,
+        ident,
         "manage_neuron",
         args,
         TargetCanister::Governance(governance_canister_id),

@@ -1,4 +1,4 @@
-use crate::lib::{mnemonic_to_pem, AnyhowResult};
+use crate::lib::{get_identity, mnemonic_to_pem, AnyhowResult};
 use anyhow::{bail, Context};
 use bip39::{Language, Mnemonic};
 use clap::Parser;
@@ -86,9 +86,10 @@ pub fn exec(opts: GenerateOpts) -> AnyhowResult {
                 .interact()
         })
         .transpose()?;
+    let password = password.as_deref().map(str::as_bytes);
     // argon2 is not needed, the algorithm already uses scrypt
-    let pem = mnemonic_to_pem(&mnemonic, password.as_ref().map(|s| s.as_bytes()))
-        .context("Failed to convert mnemonic to PEM")?;
+    let pem = mnemonic_to_pem(&mnemonic, password).context("Failed to convert mnemonic to PEM")?;
+    let ident = get_identity(&pem, password)?;
     let mut phrase = mnemonic
         .word_iter()
         .collect::<Vec<&'static str>>()
@@ -112,8 +113,7 @@ pub fn exec(opts: GenerateOpts) -> AnyhowResult {
     } else {
         fs::write(opts.to_pem_file, &pem)?;
     }
-    // skip get_ids to skip decrypting it again
-    let (principal_id, account_id) = crate::commands::public::get_ids(&Some(pem))?;
+    let (principal_id, account_id) = crate::commands::public::get_ids(Some(ident))?;
     println!("Principal id: {}", principal_id);
     println!("NNS account id: {}", account_id);
     Ok(())

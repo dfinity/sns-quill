@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     lib::{
         parse_neuron_id,
@@ -9,6 +11,7 @@ use crate::{
 use anyhow::Error;
 use candid::{Decode, Encode, IDLArgs};
 use clap::Parser;
+use ic_agent::Identity;
 use ic_sns_governance::pb::v1::{manage_neuron, ManageNeuron, Proposal};
 
 /// Signs a ManageNeuron message to submit a proposal. With this command, neuron holders
@@ -41,7 +44,7 @@ pub struct MakeProposalOpts {
 }
 
 pub fn exec(
-    private_key_pem: &str,
+    ident: Arc<dyn Identity>,
     sns_canister_ids: &SnsCanisterIds,
     opts: MakeProposalOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
@@ -57,7 +60,7 @@ pub fn exec(
     })?;
 
     let msg = sign_ingress_with_request_status_query(
-        private_key_pem,
+        ident,
         "manage_neuron",
         args,
         TargetCanister::Governance(governance_canister_id),

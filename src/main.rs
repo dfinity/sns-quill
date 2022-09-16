@@ -4,6 +4,7 @@ use crate::lib::AnyhowResult;
 use anyhow::{anyhow, Context};
 use clap::{crate_version, Parser};
 use ic_base_types::CanisterId;
+use lib::get_identity;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{collections::HashMap, fs::File, path::PathBuf, str::FromStr};
@@ -70,8 +71,9 @@ fn main() {
 
 fn run(opts: CliOpts) -> AnyhowResult<()> {
     let pem = read_pem(opts.pem_file)?;
+    let identity = pem.map(|pem| get_identity(&pem, None)).transpose()?;
     let canister_ids = read_sns_canister_ids(opts.canister_ids_file)?;
-    commands::exec(&pem, &canister_ids, opts.qr, opts.command)
+    commands::exec(identity, &canister_ids, opts.qr, opts.command)
 }
 
 /// Get PEM from the file if provided, or try to convert from the seed file
