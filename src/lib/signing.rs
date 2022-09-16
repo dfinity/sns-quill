@@ -1,12 +1,13 @@
 use crate::lib::{get_idl_string, AnyhowResult, TargetCanister};
 use anyhow::{anyhow, Context};
-use ic_agent::{agent::UpdateBuilder, RequestId};
+use ic_agent::{agent::UpdateBuilder, Identity, RequestId};
 use ic_types::principal::Principal;
 use serde::{Deserialize, Serialize};
 use serde_cbor::Value;
 use std::{
     convert::TryFrom,
     fmt::{Display, Formatter},
+    sync::Arc,
     time::Duration,
 };
 
@@ -103,11 +104,11 @@ impl Ingress {
 }
 
 pub fn request_status_sign(
-    pem: &str,
+    ident: Arc<dyn Identity>,
     request_id: RequestId,
     canister_id: Principal,
 ) -> AnyhowResult<RequestStatus> {
-    let agent = get_agent(pem)?;
+    let agent = get_agent(ident)?;
     let val = agent.sign_request_status(canister_id, request_id)?;
     Ok(RequestStatus {
         canister_id: canister_id.to_string(),
@@ -117,17 +118,18 @@ pub fn request_status_sign(
 }
 
 pub fn sign(
-    pem: &str,
+    ident: Arc<dyn Identity>,
     method_name: &str,
     args: Vec<u8>,
     target_canister: TargetCanister,
 ) -> AnyhowResult<SignedMessageWithRequestId> {
     let ingress_expiry = Duration::from_secs(5 * 60);
     let canister_id = Principal::from(target_canister);
-    let signed_update = UpdateBuilder::new(&get_agent(pem)?, canister_id, method_name.to_string())
-        .with_arg(args)
-        .expire_after(ingress_expiry)
-        .sign()?;
+    let signed_update =
+        UpdateBuilder::new(&get_agent(ident)?, canister_id, method_name.to_string())
+            .with_arg(args)
+            .expire_after(ingress_expiry)
+            .sign()?;
     let content = hex::encode(signed_update.signed_update);
     let request_id = signed_update.request_id;
 
@@ -144,17 +146,17 @@ pub fn sign(
 
 /// Generates a bundle of signed messages (ingress + request status query).
 pub fn sign_ingress_with_request_status_query(
-    pem: &str,
+    ident: Arc<dyn Identity>,
     method_name: &str,
     args: Vec<u8>,
     target_canister: TargetCanister,
 ) -> AnyhowResult<IngressWithRequestId> {
-    let msg_with_req_id = sign(pem, method_name, args, target_canister)?;
+    let msg_with_req_id = sign(ident.clone(), method_name, args, target_canister)?;
     let request_id = msg_with_req_id
         .request_id
         .context("No request id for transfer call found")?;
     let canister_id = Principal::from(target_canister);
-    let request_status = request_status_sign(pem, request_id, canister_id)?;
+    let request_status = request_status_sign(ident, request_id, canister_id)?;
     let message = IngressWithRequestId {
         ingress: msg_with_req_id.message,
         request_status,

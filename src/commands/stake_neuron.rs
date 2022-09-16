@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     commands::transfer::{self, HexSubaccount},
     lib::{
@@ -8,6 +10,7 @@ use crate::{
 };
 use candid::Encode;
 use clap::Parser;
+use ic_agent::Identity;
 use ic_base_types::PrincipalId;
 use ic_nervous_system_common::ledger;
 use ic_sns_governance::pb::v1::{
@@ -47,11 +50,11 @@ pub struct StakeNeuronOpts {
 }
 
 pub fn exec(
-    private_key_pem: &str,
+    ident: Arc<dyn Identity>,
     sns_canister_ids: &SnsCanisterIds,
     opts: StakeNeuronOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
-    let (controller, _) = crate::commands::public::get_ids(&Some(private_key_pem.to_string()))?;
+    let (controller, _) = crate::commands::public::get_ids(Some(ident.clone()))?;
     let neuron_subaccount =
         ledger::compute_neuron_staking_subaccount(PrincipalId::from(controller), opts.memo);
 
@@ -63,7 +66,7 @@ pub fn exec(
     // account on the ledger to a subaccount of the governance canister.
     if let Some(amount) = opts.amount {
         messages.extend(transfer::exec(
-            private_key_pem,
+            ident.clone(),
             sns_canister_ids,
             transfer::TransferOpts {
                 to_principal: governance_canister_id,
@@ -87,7 +90,7 @@ pub fn exec(
     })?;
 
     messages.push(sign_ingress_with_request_status_query(
-        private_key_pem,
+        ident,
         "manage_neuron",
         args,
         TargetCanister::Governance(governance_canister_id.0),

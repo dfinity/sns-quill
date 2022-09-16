@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{str::FromStr, sync::Arc};
 
 use crate::{
     lib::{
@@ -10,6 +10,7 @@ use crate::{
 use anyhow::{anyhow, bail, ensure, Context};
 use candid::Encode;
 use clap::Parser;
+use ic_agent::Identity;
 use ic_base_types::PrincipalId;
 use ic_icrc1::{endpoints::TransferArg, Subaccount};
 use ic_ledger_core::Tokens;
@@ -40,7 +41,7 @@ pub struct TransferOpts {
 }
 
 pub fn exec(
-    private_key_pem: &str,
+    ident: Arc<dyn Identity>,
     sns_canister_ids: &SnsCanisterIds,
     opts: TransferOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
@@ -79,7 +80,7 @@ pub fn exec(
     };
 
     let msg = sign_ingress_with_request_status_query(
-        private_key_pem,
+        ident,
         "icrc1_transfer",
         Encode!(&args)?,
         TargetCanister::Ledger(ledger_canister_id),

@@ -2,6 +2,7 @@ use crate::lib::{get_agent, get_ic_url, signing::RequestStatus, AnyhowResult};
 use anyhow::{anyhow, Context};
 use ic_agent::{
     agent::{ReplicaV2Transport, Replied, RequestStatusResponse},
+    identity::AnonymousIdentity,
     Agent, AgentError,
     AgentError::MessageError,
     RequestId,
@@ -13,7 +14,7 @@ pub async fn submit(req: &RequestStatus) -> AnyhowResult<Vec<u8>> {
     let canister_id =
         Principal::from_text(&req.canister_id).context("Cannot parse the canister id")?;
     let request_id = RequestId::from_str(&req.request_id).context("Cannot parse the request_id")?;
-    let mut agent = get_agent("")?;
+    let mut agent = get_agent(Arc::new(AnonymousIdentity))?;
     update_agent_root_key(&mut agent).await?;
     agent.set_transport(ProxySignReplicaV2Transport {
         req: req.clone(),

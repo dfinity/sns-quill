@@ -1,4 +1,6 @@
 //! All the common functionality.
+use std::{path::Path, sync::Arc};
+
 use crate::SnsCanisterIds;
 use anyhow::{anyhow, Context};
 use bip39::Mnemonic;
@@ -103,13 +105,12 @@ pub fn get_candid_type(idl: String, method_name: &str) -> Option<(TypeEnv, Funct
 }
 
 /// Reads from the file path or STDIN and returns the content.
-pub fn read_from_file(path: &str) -> AnyhowResult<String> {
+pub fn read_from_file(path: &Path) -> AnyhowResult<String> {
     use std::io::Read;
     let mut content = String::new();
-    if path == "-" {
+    if path == Path::new("-") {
         std::io::stdin().read_to_string(&mut content)?;
     } else {
-        let path = std::path::Path::new(&path);
         let mut file = std::fs::File::open(&path).context("Cannot open the message file.")?;
         file.read_to_string(&mut content)
             .context("Cannot read the message file.")?;
@@ -118,7 +119,7 @@ pub fn read_from_file(path: &str) -> AnyhowResult<String> {
 }
 
 /// Returns an agent with an identity derived from a private key if it was provided.
-pub fn get_agent(pem: &str) -> AnyhowResult<Agent> {
+pub fn get_agent(ident: Arc<dyn Identity>) -> AnyhowResult<Agent> {
     let timeout = std::time::Duration::from_secs(60 * 5);
     let builder = Agent::builder()
         .with_transport(
@@ -127,45 +128,63 @@ pub fn get_agent(pem: &str) -> AnyhowResult<Agent> {
             })?,
         )
         .with_ingress_expiry(Some(timeout));
-
-    Ok(builder.with_boxed_identity(get_identity(pem)?).build()?)
+    Ok(builder.with_arc_identity(ident).build()?)
 }
 
 /// Returns an identity derived from the private key.
-pub fn get_identity(pem: &str) -> AnyhowResult<Box<dyn Identity + Sync + Send>> {
+pub fn get_identity(pem: &str, password: Option<&[u8]>) -> AnyhowResult<Arc<dyn Identity>> {
+    fn is_encrypted_err(pk_error: pkcs8::Error) -> bool {
+        use pkcs8::{
+            der::{pem::Error as PemError, ErrorKind as DerError},
+            Error as PkError,
+        };
+        match pk_error {
+            PkError::EncryptedPrivateKey(_) => true,
+            PkError::Asn1(der_err)
+                if matches!(
+                    der_err.kind(),
+                    DerError::Pem(PemError::UnexpectedTypeLabel { .. })
+                ) =>
+            {
+                true
+            }
+            _ => false,
+        }
+    }
     if pem.is_empty() {
-        return Ok(Box::new(AnonymousIdentity));
+        return Ok(Arc::new(AnonymousIdentity));
     }
     // pkcs8?
     Ok(match SecretKey::from_pkcs8_pem(pem) {
-        Ok(key) => Box::new(Secp256k1Identity::from_private_key(key)),
-        Err(pkcs8::Error::EncryptedPrivateKey(_)) => {
-            let password = Password::new()
-                .with_prompt("PEM decryption password:")
-                .interact()?;
-            Box::new(Secp256k1Identity::from_private_key(
+        Ok(key) => Arc::new(Secp256k1Identity::from_private_key(key)),
+        Err(pk_error) if is_encrypted_err(pk_error) => {
+            let pass_string;
+            let password = if let Some(pass) = password {
+                pass
+            } else {
+                pass_string = Password::new()
+                    .with_prompt("PEM decryption password")
+                    .interact()?;
+                pass_string.as_bytes()
+            };
+            Arc::new(Secp256k1Identity::from_private_key(
                 SecretKey::from_pkcs8_encrypted_pem(pem, password)?,
             ))
         }
         // sec1?
         Err(e) => match Secp256k1Identity::from_pem(pem.as_bytes()) {
-            Ok(ident) => Box::new(ident),
+            Ok(ident) => Arc::new(ident),
             // ed25519?
             Err(_) => match BasicIdentity::from_pem(pem.as_bytes()) {
-                Ok(ident) => Box::new(ident),
+                Ok(ident) => Arc::new(ident),
                 Err(_) => return Err(e).context("Couldn't load identity from PEM file"),
             },
         },
     })
 }
 
-pub fn require_pem(pem: &Option<String>) -> AnyhowResult<String> {
-    match pem {
-        None => Err(anyhow!(
-            "Cannot use anonymous principal, did you forget --pem-file <pem-file> ?"
-        )),
-        Some(val) => Ok(val.clone()),
-    }
+pub fn require_identity(ident: Option<Arc<dyn Identity>>) -> AnyhowResult<Arc<dyn Identity>> {
+    ident.context("Cannot use anonymous principal, did you forget --pem-file <pem-file> ?")
 }
 
 pub fn require_canister_ids(
