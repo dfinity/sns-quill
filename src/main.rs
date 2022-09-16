@@ -216,7 +216,7 @@ fn test_read_pem_from_non_existing_file() {
         .unwrap()
         .to_string();
 
-    read_pem(Some(non_existing_file.clone())).unwrap_err();
+    read_pem(Some(non_existing_file)).unwrap_err();
 }
 
 #[test]
