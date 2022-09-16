@@ -16,16 +16,11 @@ use ic_base_types::PrincipalId;
 use ic_sns_governance::pb::v1::NeuronId;
 use ic_types::Principal;
 use k256::SecretKey;
-use pem::{encode, Pem};
 use pkcs8::{DecodePrivateKey, EncodePrivateKey, LineEnding};
 use serde::{Deserialize, Serialize};
 use serde_cbor::Value;
 
 pub const IC_URL: &str = "https://ic0.app";
-
-// The OID of secp256k1 curve is `1.3.132.0.10`.
-// Encoding in DER results in following bytes.
-const EC_PARAMETERS: [u8; 7] = [6, 5, 43, 129, 4, 0, 10];
 
 pub fn get_ic_url() -> String {
     std::env::var("IC_URL").unwrap_or_else(|_| IC_URL.to_string())
@@ -234,17 +229,10 @@ pub fn mnemonic_to_pem(mnemonic: &Mnemonic, password: Option<&[u8]>) -> AnyhowRe
         .context("Failed to derive BIP32 extended private key")?;
     let secret = ext.to_bytes();
     let secret_key = SecretKey::from_be_bytes(&secret).context("Failed to parse secret key")?;
-    let pem = Pem {
-        tag: String::from("EC PARAMETERS"),
-        contents: EC_PARAMETERS.to_vec(),
-    };
-    let parameters_pem = encode(&pem);
     let key_pem = if let Some(password) = password {
         secret_key.to_pkcs8_encrypted_pem(rand::thread_rng(), password, LineEnding::LF)?
     } else {
         secret_key.to_pkcs8_pem(LineEnding::LF)?
     };
-    Ok((parameters_pem + &key_pem)
-        .replace('\r', "")
-        .replace("\n\n", "\n"))
+    Ok(key_pem.to_string())
 }
