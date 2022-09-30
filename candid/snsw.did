@@ -27,6 +27,8 @@ type InitialTokenDistribution = variant {
 type ListDeployedSnsesResponse = record { instances : vec DeployedSns };
 type NeuronDistribution = record {
   controller : opt principal;
+  dissolve_delay_seconds : nat64;
+  memo : nat64;
   stake_e8s : nat64;
 };
 type Result = variant { Error : SnsWasmError; Hash : vec nat8 };
@@ -37,27 +39,31 @@ type SnsCanisterIds = record {
   governance : opt principal;
 };
 type SnsInitPayload = record {
-  min_participant_icp_e8s : opt nat64;
+  url : opt text;
   fallback_controller_principal_ids : vec text;
   token_symbol : opt text;
-  max_icp_e8s : opt nat64;
   neuron_minimum_stake_e8s : opt nat64;
-  min_participants : opt nat32;
+  logo : opt text;
+  name : opt text;
+  neuron_minimum_dissolve_delay_to_vote_seconds : opt nat64;
+  description : opt text;
   transaction_fee_e8s : opt nat64;
   initial_token_distribution : opt InitialTokenDistribution;
   token_name : opt text;
-  max_participant_icp_e8s : opt nat64;
   proposal_reject_cost_e8s : opt nat64;
-  min_icp_e8s : opt nat64;
 };
 type SnsVersion = record {
+  archive_wasm_hash : vec nat8;
   root_wasm_hash : vec nat8;
   swap_wasm_hash : vec nat8;
   ledger_wasm_hash : vec nat8;
   governance_wasm_hash : vec nat8;
 };
 type SnsWasm = record { wasm : vec nat8; canister_type : int32 };
-type SnsWasmCanisterInitPayload = record { sns_subnet_ids : vec principal };
+type SnsWasmCanisterInitPayload = record {
+  access_controls_enabled : bool;
+  sns_subnet_ids : vec principal;
+};
 type SnsWasmError = record { message : text };
 type SwapDistribution = record {
   total_e8s : nat64;
@@ -67,6 +73,7 @@ type TreasuryDistribution = record { total_e8s : nat64 };
 service : (SnsWasmCanisterInitPayload) -> {
   add_wasm : (AddWasmRequest) -> (AddWasmResponse);
   deploy_new_sns : (DeployNewSnsRequest) -> (DeployNewSnsResponse);
+  get_latest_sns_version_pretty : (null) -> (vec record { text; text }) query;
   get_next_sns_version : (GetNextSnsVersionRequest) -> (
       GetNextSnsVersionResponse,
     ) query;
