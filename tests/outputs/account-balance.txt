@@ -6,7 +6,7 @@ Sending message with
   Method name: icrc1_balance_of
   Arguments:   (
   record {
-    of = principal "fdsgv-62ihb-nbiqv-xgic5-iefsv-3cscz-tmbzv-63qd5-vh43v-dqfrt-pae";
+    owner = principal "fdsgv-62ihb-nbiqv-xgic5-iefsv-3cscz-tmbzv-63qd5-vh43v-dqfrt-pae";
     subaccount = null;
   },
 )
