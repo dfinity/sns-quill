@@ -13,7 +13,7 @@ use ic_agent::{
 };
 use ic_base_types::PrincipalId;
 use ic_sns_governance::pb::v1::NeuronId;
-use ic_types::Principal;
+use candid::Principal;
 use libsecp256k1::{PublicKey, SecretKey};
 use pem::{encode, Pem};
 use serde::{Deserialize, Serialize};
@@ -23,7 +23,6 @@ use simple_asn1::{
     ASN1Block::{BitString, Explicit, Integer, ObjectIdentifier, OctetString, Sequence},
     ASN1Class, BigInt, BigUint,
 };
-
 pub const IC_URL: &str = "https://ic0.app";
 
 // The OID of secp256k1 curve is `1.3.132.0.10`.
@@ -205,11 +204,11 @@ pub fn parse_query_response(response: Vec<u8>) -> AnyhowResult<Vec<u8>> {
     Err(anyhow!("Invalid cbor content"))
 }
 
-pub fn get_account_id(principal_id: Principal) -> AnyhowResult<ledger_canister::AccountIdentifier> {
+pub fn get_account_id(principal_id: Principal) -> AnyhowResult<icp_ledger::AccountIdentifier> {
     use std::convert::TryFrom;
     let base_types_principal =
         PrincipalId::try_from(principal_id.as_slice()).map_err(|err| anyhow!(err))?;
-    Ok(ledger_canister::AccountIdentifier::new(
+    Ok(icp_ledger::AccountIdentifier::new(
         base_types_principal,
         None,
     ))

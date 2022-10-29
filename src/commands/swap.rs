@@ -2,7 +2,7 @@ use candid::Encode;
 use clap::Parser;
 use ic_base_types::PrincipalId;
 use ic_sns_swap::pb::v1::RefreshBuyerTokensRequest;
-use ledger_canister::{AccountIdentifier, Memo, SendArgs, Subaccount, Tokens};
+use icp_ledger::{AccountIdentifier, Memo, SendArgs, Subaccount, Tokens};
 
 use crate::{
     lib::{
@@ -26,7 +26,7 @@ pub struct SwapOpts {
     /// An arbitrary number used to identify the NNS block this transfer was made in.
     #[clap(long)]
     memo: Option<u64>,
-    /// If this flag is specified, then no transfer will be made, and only the notification message will be generated.
+    /// If this flag is specified, then no transfer will be made, and only the notification message will be generated.src/lib/mod.rs
     /// This is useful if there was an error previously submitting the notification which you have since rectified, or if you have made the transfer with another tool.
     #[clap(long)]
     notify_only: bool,
