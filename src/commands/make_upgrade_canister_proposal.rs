@@ -8,12 +8,12 @@ use crate::{
 };
 use anyhow::{Context, Error};
 use candid::Encode;
+use candid::Principal;
 use clap::Parser;
 use ic_base_types::PrincipalId;
 use ic_sns_governance::pb::v1::{
     manage_neuron, proposal, ManageNeuron, Proposal, UpgradeSnsControlledCanister,
 };
-use candid::Principal;
 use sha2::{Digest, Sha256};
 
 /// Signs a ManageNeuron message to submit a UpgradeSnsControlledCanister

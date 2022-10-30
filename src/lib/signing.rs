@@ -1,7 +1,7 @@
 use crate::lib::{get_idl_string, AnyhowResult, TargetCanister};
 use anyhow::{anyhow, Context};
-use ic_agent::{agent::UpdateBuilder, RequestId};
 use candid::Principal;
+use ic_agent::{agent::UpdateBuilder, RequestId};
 use serde::{Deserialize, Serialize};
 use serde_cbor::Value;
 use std::{

@@ -11,7 +11,7 @@ use anyhow::{anyhow, bail, ensure, Context};
 use candid::Encode;
 use clap::Parser;
 use ic_base_types::PrincipalId;
-use ic_icrc1::{Account, endpoints::TransferArg, Memo, Subaccount};
+use ic_icrc1::{endpoints::TransferArg, Account, Memo, Subaccount};
 use ic_ledger_core::Tokens;
 
 /// Signs a ledger transfer update call.
@@ -77,7 +77,7 @@ pub fn exec(
         to: Account {
             owner: opts.to_principal,
             subaccount: to_subaccount,
-        }
+        },
     };
 
     let msg = sign_ingress_with_request_status_query(

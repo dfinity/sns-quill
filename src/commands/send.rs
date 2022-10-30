@@ -15,9 +15,9 @@ use ic_agent::{
 };
 use ic_icrc1::endpoints::TransferError;
 use ic_sns_governance::pb::v1::ManageNeuronResponse;
-use std::str::FromStr;
 use ic_sns_swap::pb::v1::RefreshBuyerTokensResponse;
 use ic_sns_wasm::pb::v1::ListDeployedSnsesResponse;
+use std::str::FromStr;
 
 /// Sends a signed message or a set of messages.
 #[derive(Parser)]
