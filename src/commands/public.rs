@@ -36,22 +36,17 @@ fn get_public_ids(
 ) -> AnyhowResult<(Principal, AccountIdentifier, Option<NeuronId>)> {
     match (opts.principal_id.as_ref(), opts.memo) {
         (Some(principal_id), None) => {
-            // get_ids using the principal_id, do not get the neuron id
             let principal_id = Principal::from_text(principal_id)?;
             Ok((principal_id, get_account_id(principal_id)?, None))
         },
         (Some(principal_id), Some(memo)) => {
-            // get_ids using the principal_id,get the neuron id
             let principal_id = Principal::from_text(principal_id)?;
             Ok((principal_id, get_account_id(principal_id)?, Some(get_neuron_id(principal_id, memo))))
         },
         (None, None) => {
-            // get_ids using the pem file, do not get the neuron id
             let pem = require_pem(pem)?;
             let principal_id = get_identity(&pem).sender().map_err(|e| anyhow!(e))?;
             Ok((principal_id, get_account_id(principal_id)?, None))
-
-
         },
         (None, Some(memo)) => {
             let pem = require_pem(pem)?;
@@ -62,7 +57,7 @@ fn get_public_ids(
 }
 
 /// Returns the account id and the principal id if the private key was provided.
-pub fn get_ids(pem: &Option<String>,) -> AnyhowResult<(Principal, AccountIdentifier)> {
+pub fn get_ids(pem: &Option<String>) -> AnyhowResult<(Principal, AccountIdentifier)> {
     let pem = require_pem(pem)?;
     let principal_id = get_identity(&pem).sender().map_err(|e| anyhow!(e))?;
     Ok((principal_id, get_account_id(principal_id)?))
