@@ -1,8 +1,0 @@
-{
-  "governance_canister_id": "s55qq-oqaaa-aaaaa-aaakq-cai",
-  "ledger_canister_id": "uywlp-pqaaa-aaaaa-aaa4q-cai",
-  "root_canister_id": "vszjv-naaaa-aaaaa-aaa3q-cai",
-  "swap_canister_id": "urvat-zyaaa-aaaaa-aaa5a-cai",
-  "dapp_canister_id_list": ["vvypb-ayaaa-aaaaa-aaa3a-cai", "v43e5-wqaaa-aaaaa-aaa2q-cai"]
-}
-

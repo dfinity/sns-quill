@@ -26,7 +26,7 @@ pub struct SwapOpts {
     /// An arbitrary number used to identify the NNS block this transfer was made in.
     #[clap(long)]
     memo: Option<u64>,
-    /// If this flag is specified, then no transfer will be made, and only the notification message will be generated.src/lib/mod.rs
+    /// If this flag is specified, then no transfer will be made, and only the notification message will be generated.
     /// This is useful if there was an error previously submitting the notification which you have since rectified, or if you have made the transfer with another tool.
     #[clap(long)]
     notify_only: bool,

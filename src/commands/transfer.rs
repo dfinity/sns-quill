@@ -63,7 +63,6 @@ pub fn exec(
         .map(|memo| {
             memo.parse::<u64>()
                 .context("Failed to parse memo as unsigned integer")
-
         })
         .transpose()?
         .map(|memo| Memo::from(memo));

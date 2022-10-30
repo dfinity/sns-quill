@@ -1,6 +1,6 @@
 use candid::Encode;
 use clap::Parser;
-use ic_sns_swap::pb::v1::GetCanisterStatusRequest;
+use ic_sns_root::GetSnsCanistersSummaryRequest;
 
 use crate::{
     lib::{AnyhowResult, TargetCanister},
@@ -20,7 +20,9 @@ pub struct StatusOpts {
 
 pub async fn exec(ids: &SnsCanisterIds, opts: StatusOpts) -> AnyhowResult {
     let root_canister_id = ids.root_canister_id.get().0;
-    let arg = Encode!(&GetCanisterStatusRequest {})?;
+    let arg = Encode!(&GetSnsCanistersSummaryRequest {
+        update_canister_list: None,
+    })?;
     send_unsigned_ingress(
         "get_sns_canisters_summary",
         arg,

@@ -29,7 +29,6 @@ ic-sns-swap = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b
 ic-sns-wasm = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
 ic-icrc1 = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
 ic-types = "0.4.1"
-#ledger-canister = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
 icp-ledger = {  git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
 libsecp256k1 = "0.7.0"
 num-bigint = { version = "0.4.3", features = ["serde"] }
