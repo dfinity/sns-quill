@@ -65,7 +65,7 @@ pub fn exec(
                 .context("Failed to parse memo as unsigned integer")
         })
         .transpose()?
-        .map(|memo| Memo::from(memo));
+        .map(Memo::from);
     let ledger_canister_id = PrincipalId::from(sns_canister_ids.ledger_canister_id).0;
     let to_subaccount = opts.to_subaccount.map(|sub| sub.0);
     let args = TransferArg {
