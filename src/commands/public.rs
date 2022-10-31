@@ -38,33 +38,21 @@ fn get_public_ids(
     pem: &Option<String>,
     opts: &PublicOpts,
 ) -> AnyhowResult<(Principal, AccountIdentifier, Option<NeuronId>)> {
-    match (opts.principal_id.as_ref(), opts.memo) {
-        (Some(principal_id), None) => {
-            let principal_id = Principal::from_text(principal_id)?;
-            Ok((principal_id, get_account_id(principal_id)?, None))
-        }
-        (Some(principal_id), Some(memo)) => {
-            let principal_id = Principal::from_text(principal_id)?;
-            Ok((
-                principal_id,
-                get_account_id(principal_id)?,
-                Some(get_neuron_id(principal_id, memo)),
-            ))
-        }
-        (None, None) => {
+    let principal_id = match &opts.principal_id {
+        Some(principal_id) => Principal::from_text(principal_id)?,
+        None => {
             let pem = require_pem(pem)?;
-            let principal_id = get_identity(&pem).sender().map_err(|e| anyhow!(e))?;
-            Ok((principal_id, get_account_id(principal_id)?, None))
+            get_identity(&pem).sender().map_err(|e| anyhow!(e))?
         }
-        (None, Some(memo)) => {
-            let pem = require_pem(pem)?;
-            let principal_id = get_identity(&pem).sender().map_err(|e| anyhow!(e))?;
-            Ok((
-                principal_id,
-                get_account_id(principal_id)?,
-                Some(get_neuron_id(principal_id, memo)),
-            ))
-        }
+    };
+
+    match opts.memo {
+        Some(memo) => Ok((
+            principal_id,
+            get_account_id(principal_id)?,
+            Some(get_neuron_id(principal_id, memo)),
+        )),
+        None => Ok((principal_id, get_account_id(principal_id)?, None)),
     }
 }
 
