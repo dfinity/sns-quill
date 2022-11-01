@@ -22,7 +22,7 @@ impl std::fmt::Display for MessageError {
 }
 impl std::error::Error for MessageError {}
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub enum CallType {
     Update,
     Query,
