@@ -23,7 +23,7 @@ jobs:
             target_file: target/release/quill.exe
             asset_name: quill-windows-x86_64.exe
             make_target: release
-            rust: stable
+            rust: 1.60.0
           - os: macos-latest
             name: macos
             target_file: target/release/quill
