@@ -15,6 +15,7 @@ use ic_agent::{
 };
 use ic_icrc1::endpoints::TransferError;
 use ic_sns_governance::pb::v1::ManageNeuronResponse;
+use ic_sns_root::GetSnsCanistersSummaryResponse;
 use ic_sns_swap::pb::v1::RefreshBuyerTokensResponse;
 use ic_sns_wasm::pb::v1::ListDeployedSnsesResponse;
 use std::str::FromStr;
@@ -144,6 +145,7 @@ enum SupportedResponse {
     ListDeployedSnses,
     IcpTransfer,
     RefreshBuyerTokens,
+    GetSnsCanistersSummary,
 }
 
 impl FromStr for SupportedResponse {
@@ -157,6 +159,7 @@ impl FromStr for SupportedResponse {
             "manage_neuron" => Ok(SupportedResponse::ManageNeuron),
             "send_dfx" => Ok(SupportedResponse::IcpTransfer),
             "refresh_buyer_tokens" => Ok(SupportedResponse::RefreshBuyerTokens),
+            "get_sns_canisters_summary" => Ok(SupportedResponse::GetSnsCanistersSummary),
             unsupported_response => Err(anyhow!(
                 "{} is not a supported response",
                 unsupported_response
@@ -192,6 +195,10 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
         SupportedResponse::RefreshBuyerTokens => {
             let response = Decode!(blob.as_slice(), RefreshBuyerTokensResponse)?;
             println!("Response: {:?\n}", response);
+        }
+        SupportedResponse::GetSnsCanistersSummary => {
+            let response = Decode!(blob.as_slice(), GetSnsCanistersSummaryResponse)?;
+            println!("Response: {:#?\n}", response);
         }
     }
 
