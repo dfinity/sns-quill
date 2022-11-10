@@ -26,7 +26,7 @@ pub async fn exec(sns_canister_ids: &SnsCanisterIds, opts: AccountBalanceOpts) -
     let ledger_canister_id = PrincipalId::from(sns_canister_ids.ledger_canister_id).0;
 
     let args = Account {
-        of: opts.principal,
+        owner: opts.principal,
         subaccount: opts.subaccount.map(|sub| sub.0),
     };
 

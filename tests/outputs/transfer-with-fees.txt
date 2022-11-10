@@ -6,9 +6,11 @@ Sending message with
   Method name: icrc1_transfer
   Arguments:   (
   record {
+    to = record {
+      owner = principal "fdsgv-62ihb-nbiqv-xgic5-iefsv-3cscz-tmbzv-63qd5-vh43v-dqfrt-pae";
+      subaccount = null;
+    };
     fee = opt (230_000 : nat);
-    to_principal = principal "fdsgv-62ihb-nbiqv-xgic5-iefsv-3cscz-tmbzv-63qd5-vh43v-dqfrt-pae";
-    to_subaccount = null;
     memo = null;
     from_subaccount = null;
     created_at_time = null;

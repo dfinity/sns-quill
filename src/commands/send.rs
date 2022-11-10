@@ -14,8 +14,10 @@ use ic_agent::{
     RequestId,
 };
 use ic_icrc1::endpoints::TransferError;
-use ic_ledger_core::Tokens;
 use ic_sns_governance::pb::v1::ManageNeuronResponse;
+use ic_sns_root::GetSnsCanistersSummaryResponse;
+use ic_sns_swap::pb::v1::RefreshBuyerTokensResponse;
+use ic_sns_wasm::pb::v1::ListDeployedSnsesResponse;
 use std::str::FromStr;
 
 /// Sends a signed message or a set of messages.
@@ -140,6 +142,10 @@ enum SupportedResponse {
     ManageNeuron,
     Transfer,
     AccountBalance,
+    ListDeployedSnses,
+    IcpTransfer,
+    RefreshBuyerTokens,
+    GetSnsCanistersSummary,
 }
 
 impl FromStr for SupportedResponse {
@@ -149,7 +155,11 @@ impl FromStr for SupportedResponse {
         match input {
             "icrc1_balance_of" => Ok(SupportedResponse::AccountBalance),
             "icrc1_transfer" => Ok(SupportedResponse::Transfer),
+            "list_deployed_snses" => Ok(SupportedResponse::ListDeployedSnses),
             "manage_neuron" => Ok(SupportedResponse::ManageNeuron),
+            "send_dfx" => Ok(SupportedResponse::IcpTransfer),
+            "refresh_buyer_tokens" => Ok(SupportedResponse::RefreshBuyerTokens),
+            "get_sns_canisters_summary" => Ok(SupportedResponse::GetSnsCanistersSummary),
             unsupported_response => Err(anyhow!(
                 "{} is not a supported response",
                 unsupported_response
@@ -163,7 +173,7 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
 
     match response_type {
         SupportedResponse::AccountBalance => {
-            let response = Decode!(blob.as_slice(), Tokens)?;
+            let response = Decode!(blob.as_slice(), candid::Nat)?;
             println!("Response: {:?\n}", response);
         }
         SupportedResponse::Transfer => {
@@ -173,6 +183,22 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
         SupportedResponse::ManageNeuron => {
             let response = Decode!(blob.as_slice(), ManageNeuronResponse)?;
             println!("Response: {:?\n}", response);
+        }
+        SupportedResponse::ListDeployedSnses => {
+            let response = Decode!(blob.as_slice(), ListDeployedSnsesResponse)?;
+            println!("Response: {:?\n}", response);
+        }
+        SupportedResponse::IcpTransfer => {
+            let response = Decode!(blob.as_slice(), u64)?;
+            println!("Response: {:?\n}", response);
+        }
+        SupportedResponse::RefreshBuyerTokens => {
+            let response = Decode!(blob.as_slice(), RefreshBuyerTokensResponse)?;
+            println!("Response: {:?\n}", response);
+        }
+        SupportedResponse::GetSnsCanistersSummary => {
+            let response = Decode!(blob.as_slice(), GetSnsCanistersSummaryResponse)?;
+            println!("Response: {:#?\n}", response);
         }
     }
 

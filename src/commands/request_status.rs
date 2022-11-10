@@ -1,12 +1,12 @@
 use crate::lib::{get_agent, get_ic_url, signing::RequestStatus, AnyhowResult};
 use anyhow::{anyhow, Context};
+use candid::Principal;
 use ic_agent::{
     agent::{ReplicaV2Transport, Replied, RequestStatusResponse},
     Agent, AgentError,
     AgentError::MessageError,
     RequestId,
 };
-use ic_types::Principal;
 use std::{future::Future, pin::Pin, str::FromStr, sync::Arc};
 
 pub async fn submit(req: &RequestStatus) -> AnyhowResult<Vec<u8>> {
@@ -25,11 +25,7 @@ pub async fn submit(req: &RequestStatus) -> AnyhowResult<Vec<u8>> {
     let Replied::CallReplied(blob) = async {
         loop {
             // Don't disable subnet delegations: https://smartcontracts.org/docs/interface-spec/index.html#certification-delegation
-            let disable_range_check = false;
-            match agent
-                .request_status_raw(&request_id, canister_id, disable_range_check)
-                .await?
-            {
+            match agent.request_status_raw(&request_id, canister_id).await? {
                 RequestStatusResponse::Replied { reply } => return Ok(reply),
                 RequestStatusResponse::Rejected {
                     reject_code,

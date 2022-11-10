@@ -1,7 +1,7 @@
 use crate::lib::{get_idl_string, AnyhowResult, TargetCanister};
 use anyhow::{anyhow, Context};
+use candid::Principal;
 use ic_agent::{agent::UpdateBuilder, RequestId};
-use ic_types::principal::Principal;
 use serde::{Deserialize, Serialize};
 use serde_cbor::Value;
 use std::{
@@ -22,7 +22,7 @@ impl std::fmt::Display for MessageError {
 }
 impl std::error::Error for MessageError {}
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub enum CallType {
     Update,
     Query,

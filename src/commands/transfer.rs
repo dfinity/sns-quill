@@ -11,9 +11,8 @@ use anyhow::{anyhow, bail, ensure, Context};
 use candid::Encode;
 use clap::Parser;
 use ic_base_types::PrincipalId;
-use ic_icrc1::{endpoints::TransferArg, Subaccount};
+use ic_icrc1::{endpoints::TransferArg, Account, Memo, Subaccount};
 use ic_ledger_core::Tokens;
-// use ledger_canister::{AccountIdentifier, Memo, Tokens, TransferArgs, DEFAULT_TRANSFER_FEE};
 
 /// Signs a ledger transfer update call.
 #[derive(Default, Parser)]
@@ -65,7 +64,8 @@ pub fn exec(
             memo.parse::<u64>()
                 .context("Failed to parse memo as unsigned integer")
         })
-        .transpose()?;
+        .transpose()?
+        .map(Memo::from);
     let ledger_canister_id = PrincipalId::from(sns_canister_ids.ledger_canister_id).0;
     let to_subaccount = opts.to_subaccount.map(|sub| sub.0);
     let args = TransferArg {
@@ -73,9 +73,11 @@ pub fn exec(
         amount,
         fee,
         from_subaccount: None,
-        to_principal: opts.to_principal,
-        to_subaccount,
         created_at_time: None,
+        to: Account {
+            owner: opts.to_principal,
+            subaccount: to_subaccount,
+        },
     };
 
     let msg = sign_ingress_with_request_status_query(
