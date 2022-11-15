@@ -1,7 +1,7 @@
 //! All the common functionality.
 use crate::SnsCanisterIds;
 use anyhow::{anyhow, Context};
-use bip39::Mnemonic;
+use bip39::{Mnemonic, Seed};
 use candid::Principal;
 use candid::{
     parser::typing::{check_prog, TypeEnv},
@@ -245,8 +245,8 @@ pub fn mnemonic_to_pem(mnemonic: &Mnemonic) -> AnyhowResult<String> {
         to_der(&data).context("Failed to encode secp256k1 secret key to DER")
     }
 
-    let seed = mnemonic.to_seed("");
-    let ext = tiny_hderive::bip32::ExtendedPrivKey::derive(&seed, "m/44'/223'/0'/0/0")
+    let seed = Seed::new(&mnemonic, "");
+    let ext = tiny_hderive::bip32::ExtendedPrivKey::derive(seed.as_bytes(), "m/44'/223'/0'/0/0")
         .map_err(|err| anyhow!("{:?}", err))
         .context("Failed to derive BIP32 extended private key")?;
     let secret = ext.secret();

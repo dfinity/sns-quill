@@ -12,24 +12,23 @@ path = "src/main.rs"
 anyhow = "1.0.34"
 async-trait = "0.1.58"
 base64 = "0.13.0"
-bip39 = "1.0.1"
 candid = "0.8.1"
 candid_derive = "0.5.0"
 clap = { version = "3.1.6", features = ["derive", "cargo"] }
 flate2 = "1.0.22"
 hex = {version = "0.4.2", features = ["serde"] }
 ic-agent = "0.22.0"
-ic-base-types = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
-ic-ledger-core = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
-ic-nervous-system-common = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
-ic-nns-constants = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
-ic-sns-governance = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
-ic-sns-root = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
-ic-sns-swap = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
-ic-sns-wasm = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
-ic-icrc1 = { git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
+ic-base-types = { git = "https://github.com/dfinity/ic", rev = "e311a082c34d099cc839ae6db6c32b1ef3f14955" }
+ic-ledger-core = { git = "https://github.com/dfinity/ic", rev = "e311a082c34d099cc839ae6db6c32b1ef3f14955" }
+ic-nervous-system-common = { git = "https://github.com/dfinity/ic", rev = "e311a082c34d099cc839ae6db6c32b1ef3f14955" }
+ic-nns-constants = { git = "https://github.com/dfinity/ic", rev = "e311a082c34d099cc839ae6db6c32b1ef3f14955" }
+ic-sns-governance = { git = "https://github.com/dfinity/ic", rev = "e311a082c34d099cc839ae6db6c32b1ef3f14955" }
+ic-sns-root = { git = "https://github.com/dfinity/ic", rev = "e311a082c34d099cc839ae6db6c32b1ef3f14955" }
+ic-sns-swap = { git = "https://github.com/dfinity/ic", rev = "e311a082c34d099cc839ae6db6c32b1ef3f14955" }
+ic-sns-wasm = { git = "https://github.com/dfinity/ic", rev = "e311a082c34d099cc839ae6db6c32b1ef3f14955" }
+ic-icrc1 = { git = "https://github.com/dfinity/ic", rev = "e311a082c34d099cc839ae6db6c32b1ef3f14955" }
 ic-types = "0.4.1"
-icp-ledger = {  git = "https://github.com/dfinity/ic", rev = "1fc0208b9aeed0554b1be2711605e5b54ace9d6a" }
+icp-ledger = {  git = "https://github.com/dfinity/ic", rev = "e311a082c34d099cc839ae6db6c32b1ef3f14955" }
 libsecp256k1 = "0.7.0"
 num-bigint = { version = "0.4.3", features = ["serde"] }
 openssl = "0.10.32"
@@ -42,6 +41,7 @@ serde = { version = "1.0.130", features = ["derive"] }
 serde_bytes = "0.11.2"
 serde_cbor = "0.11.2"
 serde_json = "1.0.57"
+tiny-bip39 = "1.0.0"
 tiny-hderive = "0.3.0"
 tokio = { version = "1.2.0", features = [ "fs" ] }
 
