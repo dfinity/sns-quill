@@ -245,7 +245,7 @@ pub fn mnemonic_to_pem(mnemonic: &Mnemonic) -> AnyhowResult<String> {
         to_der(&data).context("Failed to encode secp256k1 secret key to DER")
     }
 
-    let seed = Seed::new(&mnemonic, "");
+    let seed = Seed::new(mnemonic, "");
     let ext = tiny_hderive::bip32::ExtendedPrivKey::derive(seed.as_bytes(), "m/44'/223'/0'/0/0")
         .map_err(|err| anyhow!("{:?}", err))
         .context("Failed to derive BIP32 extended private key")?;
