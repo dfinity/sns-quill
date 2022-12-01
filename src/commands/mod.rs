@@ -19,6 +19,7 @@ mod qrcode;
 mod register_vote;
 mod request_status;
 mod send;
+mod stake_maturity;
 mod stake_neuron;
 mod status;
 mod swap;
@@ -39,6 +40,7 @@ pub enum Command {
     /// provided private key and memo. Second, stake-neuron will sign a ManageNeuron message for
     /// Governance to claim the neuron for the principal derived from the provided private key.
     StakeNeuron(stake_neuron::StakeNeuronOpts),
+    StakeMaturity(stake_maturity::StakeMaturityOpts),
     /// Signs a ManageNeuron message to configure the dissolve delay of a neuron. With this command
     /// neuron holders can start dissolving, stop dissolving, or increase dissolve delay. The
     /// dissolve delay of a neuron determines its voting power, its ability to vote, its ability
@@ -94,6 +96,11 @@ pub fn exec(
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             stake_neuron::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
+        Command::StakeMaturity(opts) => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            stake_maturity::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
         Command::ConfigureDissolveDelay(opts) => {
             let pem = require_pem(private_key_pem)?;

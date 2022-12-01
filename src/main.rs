@@ -2,7 +2,7 @@
 
 use crate::lib::AnyhowResult;
 use anyhow::{anyhow, Context};
-use bip39::Mnemonic;
+use bip39::{Language, Mnemonic};
 use clap::{crate_version, Parser};
 use ic_base_types::CanisterId;
 use serde::{Deserialize, Serialize};
@@ -178,7 +178,8 @@ fn parse_dapp_canister_id_list(
 }
 
 fn parse_mnemonic(phrase: &str) -> AnyhowResult<Mnemonic> {
-    Mnemonic::parse(phrase).context("Couldn't parse the seed phrase as a valid mnemonic. {:?}")
+    Mnemonic::from_phrase(phrase, Language::English)
+        .context("Couldn't parse the seed phrase as a valid mnemonic. {:?}")
 }
 
 fn read_file(path: &str, name: &str) -> AnyhowResult<String> {
@@ -228,7 +229,8 @@ fn test_read_pem_from_seed_file() {
     seed_file
         .write_all(phrase.as_bytes())
         .expect("Cannot write to temp file");
-    let mnemonic = lib::mnemonic_to_pem(&Mnemonic::parse(phrase).unwrap()).unwrap();
+    let mnemonic =
+        lib::mnemonic_to_pem(&Mnemonic::from_phrase(phrase, Language::English).unwrap()).unwrap();
 
     let pem = read_pem(None, Some(seed_file.path().to_str().unwrap().to_string()))
         .expect("Unable to read seed_file")

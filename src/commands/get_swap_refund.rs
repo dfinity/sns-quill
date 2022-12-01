@@ -10,35 +10,22 @@ use crate::{
     SnsCanisterIds,
 };
 
-use super::transfer;
+use super::public::get_ids;
 
 /// Signs a message to request a refund from the SNS swap canister.
 /// If the swap was aborted or failed, or some of your contributed ICP never made it into a neuron,
 /// this command can retrieve your unused ICP, minus transaction fees.
 #[derive(Parser)]
-pub struct GetSwapRefundOpts {
-    /// The amount of ICP to request a refund for.
-    #[clap(long)]
-    amount: String,
-    /// The expected transaction fee. If omitted, defaults to 0.0001 ICP.
-    #[clap(long)]
-    fee: Option<String>,
-}
+pub struct GetSwapRefundOpts;
 
 pub fn exec(
     pem: &str,
     sns_canister_ids: &SnsCanisterIds,
-    opts: GetSwapRefundOpts,
+    _: GetSwapRefundOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
-    let tokens = transfer::parse_tokens(&opts.amount)?.get_e8s();
-    let fee = opts
-        .fee
-        .map(|fee| anyhow::Ok(transfer::parse_tokens(&fee)?.get_e8s()))
-        .transpose()?
-        .unwrap_or(10_000);
+    let (principal, _) = get_ids(&Some(pem.to_string()))?;
     let message = ErrorRefundIcpRequest {
-        icp_e8s: tokens,
-        fee_override_e8s: fee,
+        source_principal_id: Some(principal.into()),
     };
     let req = sign_ingress_with_request_status_query(
         pem,
