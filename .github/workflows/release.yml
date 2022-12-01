@@ -15,27 +15,27 @@ jobs:
         include:
           - os: ubuntu-latest
             name: linux
-            target_file: target/x86_64-unknown-linux-musl/release/quill
-            asset_name: quill-linux-x86_64
+            target_file: target/x86_64-unknown-linux-musl/release/sns-quill
+            asset_name: sns-quill-linux-x86_64
             make_target: musl-static
           - os: windows-latest
             name: windows
-            target_file: target/release/quill.exe
-            asset_name: quill-windows-x86_64.exe
+            target_file: target/release/sns-quill.exe
+            asset_name: sns-quill-windows-x86_64.exe
             make_target: release
             rust: 1.64.0
           - os: macos-latest
             name: macos
-            target_file: target/release/quill
-            asset_name: quill-macos-x86_64
+            target_file: target/release/sns-quill
+            asset_name: sns-quill-macos-x86_64
             make_target: release
-            rust: stable
+            rust: 1.64.0
           - os: ubuntu-latest
             name: arm
-            target_file: target/arm-unknown-linux-gnueabihf/release/quill
-            asset_name: quill-arm_32
+            target_file: target/arm-unknown-linux-gnueabihf/release/sns-quill
+            asset_name: sns-quill-arm_32
             make_target: unused
-            rust: stable
+            rust: 1.64.0
     steps:
     - uses: actions/checkout@master
 
@@ -52,7 +52,7 @@ jobs:
 
     - name: Install toolchain (Linux static)
       if: matrix.name == 'linux'
-      uses: gmiam/rust-musl-action@master
+      uses: mariodfinity/rust-musl-action@master
       with:
         args: make ${{ matrix.make_target }}
     - name: Install toolchain (ARM)
