@@ -28,7 +28,7 @@ pub fn exec(
     opts: GetSwapRefundOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
     let message = ErrorRefundIcpRequest {
-        source_principal_id: Some(opts.principal)
+        source_principal_id: Some(opts.principal),
     };
     let req = sign_ingress_with_request_status_query(
         pem,
