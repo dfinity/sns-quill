@@ -56,7 +56,8 @@ pub fn exec(
     let proposal_string = match opts.proposal {
         Some(proposal) => proposal,
         None => String::from_utf8(
-            std::fs::read(opts.proposal_path.unwrap()).context("Unable to read --wasm-path.")?,
+            std::fs::read(opts.proposal_path.unwrap())
+                .context("Unable to read --proposal-path.")?,
         )?,
     };
     let proposal = parse_proposal_from_candid_string(proposal_string)?;
