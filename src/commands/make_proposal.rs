@@ -39,8 +39,9 @@ pub struct MakeProposalOpts {
     #[clap(long)]
     proposal: Option<String>,
 
-    /// Path to the WASM file to be installed onto the target canister.
-    #[clap(long)]
+    /// Path to the file containing the proposal. The proposal must be formatted as a string
+    /// wrapped candid record.
+    #[clap(long, conflicts_with("proposal"))]
     proposal_path: Option<String>,
 }
 
@@ -53,15 +54,14 @@ pub fn exec(
     let neuron_subaccount = neuron_id.subaccount().map_err(Error::msg)?;
     let governance_canister_id = sns_canister_ids.governance_canister_id.get().0;
 
-    let proposal_string = match opts.proposal {
-        Some(proposal) => proposal,
-        None => String::from_utf8(
-            std::fs::read(
-                opts.proposal_path
-                    .context("Must provide --proposal or --proposal-path.")?,
-            )
-            .context("Unable to read --proposal-path.")?,
+    let proposal_string = match (opts.proposal, opts.proposal_path) {
+        (Some(proposal), _) => proposal,
+        (_, Some(proposal_path)) => String::from_utf8(
+            std::fs::read(proposal_path).context("Unable to read --proposal-path.")?,
         )?,
+        _ => {
+            return Err(Error::msg("Must provide --proposal or --proposal-path."));
+        }
     };
     let proposal = parse_proposal_from_candid_string(proposal_string)?;
 
