@@ -6,7 +6,7 @@ use crate::{
     },
     AnyhowResult, SnsCanisterIds,
 };
-use anyhow::Error;
+use anyhow::{Context, Error};
 use candid::{Decode, Encode, IDLArgs};
 use clap::Parser;
 use ic_sns_governance::pb::v1::{manage_neuron, ManageNeuron, Proposal};
@@ -37,7 +37,12 @@ pub struct MakeProposalOpts {
     ///     }
     /// )'
     #[clap(long)]
-    proposal: String,
+    proposal: Option<String>,
+
+    /// Path to the file containing the proposal. The proposal must be formatted as a string
+    /// wrapped candid record.
+    #[clap(long, conflicts_with("proposal"))]
+    proposal_path: Option<String>,
 }
 
 pub fn exec(
@@ -49,7 +54,16 @@ pub fn exec(
     let neuron_subaccount = neuron_id.subaccount().map_err(Error::msg)?;
     let governance_canister_id = sns_canister_ids.governance_canister_id.get().0;
 
-    let proposal = parse_proposal_from_candid_string(opts.proposal)?;
+    let proposal_string = match (opts.proposal, opts.proposal_path) {
+        (Some(proposal), _) => proposal,
+        (_, Some(proposal_path)) => String::from_utf8(
+            std::fs::read(proposal_path).context("Unable to read --proposal-path.")?,
+        )?,
+        _ => {
+            return Err(Error::msg("Must provide --proposal or --proposal-path."));
+        }
+    };
+    let proposal = parse_proposal_from_candid_string(proposal_string)?;
 
     let args = Encode!(&ManageNeuron {
         subaccount: neuron_subaccount.to_vec(),
