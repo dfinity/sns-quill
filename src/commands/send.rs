@@ -146,6 +146,7 @@ enum SupportedResponse {
     IcpTransfer,
     RefreshBuyerTokens,
     GetSnsCanistersSummary,
+    GetOpenTicket,
 }
 
 impl FromStr for SupportedResponse {
@@ -160,6 +161,7 @@ impl FromStr for SupportedResponse {
             "send_dfx" => Ok(SupportedResponse::IcpTransfer),
             "refresh_buyer_tokens" => Ok(SupportedResponse::RefreshBuyerTokens),
             "get_sns_canisters_summary" => Ok(SupportedResponse::GetSnsCanistersSummary),
+            "get_open_ticket" => Ok(SupportedResponse::GetOpenTicket),
             unsupported_response => Err(anyhow!(
                 "{} is not a supported response",
                 unsupported_response
@@ -200,7 +202,15 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
             let response = Decode!(blob.as_slice(), GetSnsCanistersSummaryResponse)?;
             println!("Response: {:#?\n}", response);
         }
+        SupportedResponse::GetOpenTicket => {
+            let response = Decode!(blob.as_slice(), GetOpenTicketResponse)?;
+            println!("Response: {:#?\n}", response);
+        }
     }
 
     Ok(())
 }
+
+// FIXME: use ic_sns_swap when it is available
+#[derive(Debug, candid::CandidType, candid::Deserialize)]
+struct GetOpenTicketResponse {}
