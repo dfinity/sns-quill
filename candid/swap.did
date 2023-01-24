@@ -32,6 +32,11 @@ type DerivedState = record {
 type DirectInvestment = record { buyer_principal : text };
 type Err = record { description : opt text; error_type : opt int32 };
 type Err_1 = record { error_type : opt int32 };
+type Err_2 = record {
+  invalid_user_amount : opt InvalidUserAmount;
+  allowance_icp_e8s : opt nat64;
+  error_type : opt int32;
+};
 type ErrorRefundIcpRequest = record { source_principal_id : opt principal };
 type ErrorRefundIcpResponse = record { result : opt Result };
 type FailedUpdate = record {
@@ -70,6 +75,10 @@ type Init = record {
   sns_ledger_canister_id : text;
   sns_governance_canister_id : text;
 };
+type InvalidUserAmount = record {
+  min_amount_icp_e8s_included : nat64;
+  max_amount_icp_e8s_included : nat64;
+};
 type Investor = variant {
   CommunityFund : CfInvestment;
   Direct : DirectInvestment;
@@ -79,8 +88,14 @@ type NeuronBasketConstructionParameters = record {
   dissolve_delay_interval_seconds : nat64;
   count : nat64;
 };
+type NewSaleTicketRequest = record {
+  subaccount : opt vec nat8;
+  amount_icp_e8s : nat64;
+};
+type NewSaleTicketResponse = record { result : opt Result_2 };
 type Ok = record { block_height : opt nat64 };
 type Ok_1 = record { ticket : opt Ticket };
+type Ok_2 = record { creation_time : nat64; ticket_id : nat64 };
 type OpenRequest = record {
   cf_participants : vec CfParticipant;
   params : opt Params;
@@ -110,6 +125,7 @@ type RefreshBuyerTokensResponse = record {
 type Response = record { governance_error : opt GovernanceError };
 type Result = variant { Ok : Ok; Err : Err };
 type Result_1 = variant { Ok : Ok_1; Err : Err_1 };
+type Result_2 = variant { Ok : Ok_2; Err : Err_2 };
 type SetDappControllersCallResult = record { possibility : opt Possibility_1 };
 type SetDappControllersResponse = record { failed_updates : vec FailedUpdate };
 type SetModeCallResult = record { possibility : opt Possibility_2 };
@@ -154,6 +170,7 @@ service : (Init) -> {
   get_lifecycle : (record {}) -> (GetLifecycleResponse) query;
   get_open_ticket : (record {}) -> (GetOpenTicketResponse) query;
   get_state : (record {}) -> (GetStateResponse) query;
+  new_sale_ticket : (NewSaleTicketRequest) -> (NewSaleTicketResponse);
   open : (OpenRequest) -> (record {});
   refresh_buyer_tokens : (RefreshBuyerTokensRequest) -> (
       RefreshBuyerTokensResponse,

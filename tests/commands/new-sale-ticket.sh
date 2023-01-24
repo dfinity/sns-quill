@@ -1,0 +1,1 @@
+${CARGO_TARGET_DIR:-../target}/debug/sns-quill --canister-ids-file ./canister_ids.json --pem-file - new-sale-ticket --amount-icp-e8s 100000 --subaccount e000d80101 | ${CARGO_TARGET_DIR:-../target}/debug/sns-quill send --dry-run -
