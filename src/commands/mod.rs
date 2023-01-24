@@ -9,6 +9,7 @@ use tokio::runtime::Runtime;
 mod account_balance;
 mod configure_dissolve_delay;
 mod generate;
+mod get_open_ticket;
 mod get_swap_refund;
 mod list_deployed_snses;
 mod make_proposal;
@@ -48,6 +49,8 @@ pub enum Command {
     /// can submit proposals (such as a Motion Proposal) to be voted on by other neuron
     /// holders.
     MakeProposal(make_proposal::MakeProposalOpts),
+    /// Get the open sale ticket for the caller if exist.
+    GetOpenTicket,
     GetSwapRefund(get_swap_refund::GetSwapRefundOpts),
     ListDeployedSnses(list_deployed_snses::ListDeployedSnsesOpts),
     /// Signs a ManageNeuron message to register a vote for a proposal. Registering a vote will
@@ -105,6 +108,11 @@ pub fn exec(
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             make_proposal::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+        }
+        Command::GetOpenTicket => {
+            let pem = require_pem(private_key_pem)?;
+            let canister_ids = require_canister_ids(sns_canister_ids)?;
+            get_open_ticket::exec(&pem, &canister_ids).and_then(|out| print_vec(qr, &out))
         }
         Command::GetSwapRefund(opts) => {
             let pem = require_pem(private_key_pem)?;
