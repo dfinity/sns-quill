@@ -23,6 +23,7 @@ pub struct NewSaleTicketOpts {
     subaccount: Option<HexSubaccount>,
 }
 
+// FIXME: use ic_sns_swap when it is available
 #[derive(candid::CandidType, candid::Deserialize)]
 struct NewSaleTicketRequest {
     amount_icp_e8s: u64,
