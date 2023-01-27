@@ -68,7 +68,9 @@ pub fn exec(
     let target_canister_id = PrincipalId(Principal::from_text(target_canister_id)?);
     let wasm = std::fs::read(wasm_path).context("Unable to read --wasm-path.")?;
     let canister_upgrade_arg = match canister_upgrade_arg_path {
-        Some(path) => Some(std::fs::read(path).context("Unable to read --canister-upgrade-arg-path.")?),
+        Some(path) => {
+            Some(std::fs::read(path).context("Unable to read --canister-upgrade-arg-path.")?)
+        }
         None => None,
     };
 
