@@ -44,6 +44,10 @@ pub struct MakeUpgradeCanisterProposalOpts {
     /// Path to the WASM file to be installed onto the target canister.
     #[clap(long)]
     wasm_path: String,
+
+    /// Path to the file containing argument to post-upgrade method of the new canister WASM.
+    #[clap(long)]
+    canister_upgrade_arg_path: Option<String>,
 }
 
 pub fn exec(
@@ -58,10 +62,15 @@ pub fn exec(
         summary,
         target_canister_id,
         wasm_path,
+        canister_upgrade_arg_path,
     } = opts;
 
     let target_canister_id = PrincipalId(Principal::from_text(target_canister_id)?);
     let wasm = std::fs::read(wasm_path).context("Unable to read --wasm-path.")?;
+    let canister_upgrade_arg = match canister_upgrade_arg_path {
+        Some(path) => Some(std::fs::read(path).context("Unable to read --canister-upgrade-arg-path.")?),
+        None => None,
+    };
 
     // (Dynamically) come up with a summary if one wasn't provided.
     let summary = if !summary.is_empty() {
@@ -78,6 +87,7 @@ pub fn exec(
             UpgradeSnsControlledCanister {
                 canister_id: Some(target_canister_id),
                 new_canister_wasm: wasm,
+                canister_upgrade_arg,
             },
         )),
     };
