@@ -163,7 +163,7 @@ impl FromStr for SupportedResponse {
             "refresh_buyer_tokens" => Ok(SupportedResponse::RefreshBuyerTokens),
             "get_sns_canisters_summary" => Ok(SupportedResponse::GetSnsCanistersSummary),
             "get_open_ticket" => Ok(SupportedResponse::GetOpenTicket),
-            "new-sale-ticket" => Ok(SupportedResponse::NewSaleTicket),
+            "new_sale_ticket" => Ok(SupportedResponse::NewSaleTicket),
             unsupported_response => Err(anyhow!(
                 "{} is not a supported response",
                 unsupported_response
