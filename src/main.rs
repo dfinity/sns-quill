@@ -36,9 +36,6 @@ pub struct CliOpts {
     ///   "governance_canister_id": "rrkah-fqaaa-aaaaa-aaaaq-cai",
     ///   "ledger_canister_id": "ryjl3-tyaaa-aaaaa-aaaba-cai",
     ///   "root_canister_id": "r7inp-6aaaa-aaaaa-aaabq-cai"
-    ///   "dapp_canister_id_list": [
-    ///.      "qoctq-giaaa-aaaaa-aaaea-cai"
-    ///.   ],
     /// }
     #[clap(long)]
     canister_ids_file: Option<String>,
@@ -53,7 +50,6 @@ pub struct SnsCanisterIds {
     pub ledger_canister_id: CanisterId,
     pub root_canister_id: CanisterId,
     pub swap_canister_id: CanisterId,
-    pub dapp_canister_id_list: Vec<CanisterId>,
 }
 
 fn main() {
@@ -99,7 +95,6 @@ fn read_pem(pem_file: Option<String>, seed_file: Option<String>) -> AnyhowResult
 ///   1. governance_canister_id
 ///   2. ledger_canister_id
 ///   3. root_canister_id
-///   4. dapp_canister_id_list (array)
 ///
 /// If no file_path is provided (i.e. not provided as input to the command), do nothing and return
 /// Ok(None). If the file_path is provided, but the file is malformed, Err is returned. Else, return
@@ -120,14 +115,11 @@ fn read_sns_canister_ids(file_path: Option<String>) -> AnyhowResult<Option<SnsCa
     let root_canister_id = parse_canister_id("root_canister_id", &ids)?;
     let swap_canister_id = parse_canister_id("swap_canister_id", &ids)?;
 
-    let dapp_canister_id_list = parse_dapp_canister_id_list("dapp_canister_id_list", &ids)?;
-
     Ok(Some(SnsCanisterIds {
         governance_canister_id,
         ledger_canister_id,
         swap_canister_id,
         root_canister_id,
-        dapp_canister_id_list,
     }))
 }
 
@@ -147,33 +139,6 @@ fn parse_canister_id(
         Ok(canister_id)
     } else {
         Err(anyhow!("Couldnt read {} as a string", key_name))
-    }
-}
-
-fn parse_dapp_canister_id_list(
-    key_name: &str,
-    canister_id_map: &HashMap<String, Value>,
-) -> AnyhowResult<Vec<CanisterId>> {
-    let value = canister_id_map.get(key_name).ok_or_else(|| {
-        anyhow!(
-            "'{}' is not present in --canister-ids-file <file>",
-            key_name
-        )
-    })?;
-    let mut canister_id_vec: Vec<CanisterId> = vec![];
-    match value {
-        Value::Array(id_array) => {
-            for id in id_array {
-                if let Value::String(str) = id {
-                    let canister_id = CanisterId::from_str(str).map_err(|err| {
-                        anyhow!("Could not parse {} as a CanisterId: {}", str, err)
-                    })?;
-                    canister_id_vec.push(canister_id);
-                }
-            }
-            Ok(canister_id_vec)
-        }
-        _ => Err(anyhow!("Failed to parse field {} as an Array", key_name)),
     }
 }
 
@@ -264,36 +229,6 @@ fn test_read_canister_ids_from_file() {
         ledger_canister_id: CanisterId::from_str("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap(),
         root_canister_id: CanisterId::from_str("r7inp-6aaaa-aaaaa-aaabq-cai").unwrap(),
         swap_canister_id: CanisterId::from_str("rkp4c-7iaaa-aaaaa-aaaca-cai").unwrap(),
-        dapp_canister_id_list: vec![
-            CanisterId::from_str("rdmx6-jaaaa-aaaaa-aaadq-cai").unwrap(),
-            CanisterId::from_str("qoctq-giaaa-aaaaa-aaaea-cai").unwrap(),
-        ],
-    };
-
-    let json_str = serde_json::to_string(&expected_canister_ids).unwrap();
-
-    write!(canister_ids_file, "{}", json_str).expect("Cannot write to tmp file");
-
-    let actual_canister_ids =
-        read_sns_canister_ids(Some(canister_ids_file.path().to_str().unwrap().to_string()))
-            .expect("Unable to read canister_ids_file")
-            .expect("None returned instead of Some");
-
-    assert_eq!(actual_canister_ids, expected_canister_ids);
-}
-
-#[test]
-fn test_read_canister_ids_from_file_empty_dapp_canister_id_list() {
-    use std::io::Write;
-
-    let mut canister_ids_file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
-
-    let expected_canister_ids = SnsCanisterIds {
-        governance_canister_id: CanisterId::from_str("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap(),
-        ledger_canister_id: CanisterId::from_str("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap(),
-        root_canister_id: CanisterId::from_str("r7inp-6aaaa-aaaaa-aaabq-cai").unwrap(),
-        swap_canister_id: CanisterId::from_str("rkp4c-7iaaa-aaaaa-aaaca-cai").unwrap(),
-        dapp_canister_id_list: vec![],
     };
 
     let json_str = serde_json::to_string(&expected_canister_ids).unwrap();
