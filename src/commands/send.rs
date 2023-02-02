@@ -217,10 +217,10 @@ fn print_response(blob: Vec<u8>, method_name: String) -> AnyhowResult {
     Ok(())
 }
 
-// FIXME: use ic_sns_swap when it is available
+// TODO: SDK-954 - use ic_sns_swap when it is available
 #[derive(Debug, candid::CandidType, candid::Deserialize)]
 struct GetOpenTicketResponse {}
 
-// FIXME: use ic_sns_swap when it is available
+// TODO: SDK-954 - use ic_sns_swap when it is available
 #[derive(Debug, candid::CandidType, candid::Deserialize)]
 struct NewSaleTicketResponse {}
