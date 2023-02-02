@@ -50,6 +50,7 @@ pub enum Command {
     /// holders.
     MakeProposal(make_proposal::MakeProposalOpts),
     GetSwapRefund(get_swap_refund::GetSwapRefundOpts),
+    /// Get the sale ticket of the caller. If there is no open ticket yet, create a new ticket with specified arguments.
     GetSaleTicket(get_sale_ticket::GetSaleTicketOpts),
     ListDeployedSnses(list_deployed_snses::ListDeployedSnsesOpts),
     /// Signs a ManageNeuron message to register a vote for a proposal. Registering a vote will
