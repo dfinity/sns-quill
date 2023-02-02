@@ -10,10 +10,9 @@ use crate::{
     SnsCanisterIds,
 };
 
-/// Attempts to create a new Ticket for the caller.
+/// Get the sale ticket of the caller. If there is no open ticket yet, create a new ticket with specified arguments.
 #[derive(Parser)]
-pub struct NewSaleTicketOpts {
-    // TODO: check this description
+pub struct GetSaleTicketOpts {
     /// The amount of ICP tokens in e8s.
     #[clap(long)]
     amount_icp_e8s: u64,
@@ -30,20 +29,30 @@ struct NewSaleTicketRequest {
     subaccount: Option<[u8; 32]>,
 }
 
+#[derive(candid::CandidType, candid::Deserialize)]
+struct GetOpenTicketArg {}
+
 pub fn exec(
     pem: &str,
     sns_canister_ids: &SnsCanisterIds,
-    opts: NewSaleTicketOpts,
+    opts: GetSaleTicketOpts,
 ) -> AnyhowResult<Vec<IngressWithRequestId>> {
+    let req1 = sign_ingress_with_request_status_query(
+        pem,
+        "get_open_ticket",
+        Encode!(&GetOpenTicketArg {})?,
+        TargetCanister::Swap(sns_canister_ids.swap_canister_id.get().0),
+    )?;
+
     let message = NewSaleTicketRequest {
         amount_icp_e8s: opts.amount_icp_e8s,
         subaccount: opts.subaccount.map(|sub| sub.0),
     };
-    let req = sign_ingress_with_request_status_query(
+    let req2 = sign_ingress_with_request_status_query(
         pem,
         "new_sale_ticket",
         Encode!(&message)?,
         TargetCanister::Swap(sns_canister_ids.swap_canister_id.get().0),
     )?;
-    Ok(vec![req])
+    Ok(vec![req1, req2])
 }

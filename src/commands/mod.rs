@@ -9,13 +9,12 @@ use tokio::runtime::Runtime;
 mod account_balance;
 mod configure_dissolve_delay;
 mod generate;
-mod get_open_ticket;
 mod get_swap_refund;
 mod list_deployed_snses;
 mod make_proposal;
 mod make_upgrade_canister_proposal;
 mod neuron_permission;
-mod new_sale_ticket;
+mod get_sale_ticket;
 mod public;
 mod qrcode;
 mod register_vote;
@@ -50,10 +49,8 @@ pub enum Command {
     /// can submit proposals (such as a Motion Proposal) to be voted on by other neuron
     /// holders.
     MakeProposal(make_proposal::MakeProposalOpts),
-    /// Get the open sale ticket for the caller if exist.
-    GetOpenTicket,
     GetSwapRefund(get_swap_refund::GetSwapRefundOpts),
-    NewSaleTicket(new_sale_ticket::NewSaleTicketOpts),
+    GetSaleTicket(get_sale_ticket::GetSaleTicketOpts),
     ListDeployedSnses(list_deployed_snses::ListDeployedSnsesOpts),
     /// Signs a ManageNeuron message to register a vote for a proposal. Registering a vote will
     /// update the ballot of the given proposal and could trigger followees to vote. When
@@ -111,20 +108,15 @@ pub fn exec(
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             make_proposal::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
-        Command::GetOpenTicket => {
-            let pem = require_pem(private_key_pem)?;
-            let canister_ids = require_canister_ids(sns_canister_ids)?;
-            get_open_ticket::exec(&pem, &canister_ids).and_then(|out| print_vec(qr, &out))
-        }
         Command::GetSwapRefund(opts) => {
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
             get_swap_refund::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
-        Command::NewSaleTicket(opts) => {
+        Command::GetSaleTicket(opts) => {
             let pem = require_pem(private_key_pem)?;
             let canister_ids = require_canister_ids(sns_canister_ids)?;
-            new_sale_ticket::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
+            get_sale_ticket::exec(&pem, &canister_ids, opts).and_then(|out| print_vec(qr, &out))
         }
         Command::ListDeployedSnses(opts) => {
             runtime.block_on(async { list_deployed_snses::exec(opts).await })
