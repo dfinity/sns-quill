@@ -32,7 +32,7 @@ ic-types = "0.4.1"
 icp-ledger = {  git = "https://github.com/dfinity/ic", rev = "0fc243cb16fbe9d45fd39b0bc6bd7a30dfc0aa77" }
 libsecp256k1 = "0.7.0"
 num-bigint = { version = "0.4.3", features = ["serde"] }
-openssl = "0.10.32"
+openssl = "0.10.48"
 pem = "1.0.1"
 rand = { version = "0.8.4", features = ["getrandom"] }
 reqwest = "0.11.7"
