@@ -1,3 +1,7 @@
+# 🚨 Attention 🚨
+### `sns-quill` has been archived. All functions have been migrated to [quill](https://github.com/dfinity/quill). Please use that instead.
+<hr />
+
 # sns-quill
 
 Cold wallet toolkit for interacting with the ledger and governance canister of a service nervous system (SNS).
